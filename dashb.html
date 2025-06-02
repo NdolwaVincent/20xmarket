@@ -137,8 +137,8 @@
     if (!user) {
       window.location.href = "index.html";
     } else {
-      document.getElementById("userName").textContent = `Name: ${user.name}`;
-      document.getElementById("userPhone").textContent = `Phone: ${user.phone}`;
+      document.getElementById("name").textContent = `name: ${user.name}`;
+      document.getElementById("phones").textContent = `Phone: ${user.phone}`;
     }
     function navigate(id) {
       document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
