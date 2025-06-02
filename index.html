@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Crypto Investment Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @media (max-width: 768px) {
+      #sidebar.show {
+        transform: translateX(0);
+      }
+    }
+  </style>
+</head>
+
+<body class="bg-gray-100 text-gray-900">
+  <div class="flex h-screen overflow-hidden">
+    <!-- Sidebar -->
+    <div id="sidebar" class="bg-gradient-to-b from-indigo-600 via-indigo-700 to-indigo-800 text-white w-64 space-y-4 py-6 px-4 border-r border-gray-200 fixed top-0 left-0 h-full z-50 transform -translate-x-full md:translate-x-0 md:relative md:block transition-transform duration-300 ease-in-out shadow-2xl">
+      <div class="text-2xl font-bold mb-6">Dashboard Menu</div>
+      <nav class="space-y-3">
+        <button onclick="navigate('home')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Home</button>
+        <button onclick="navigate('products')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Products</button>
+        <button onclick="navigate('purchases')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Purchases</button>
+        <button onclick="navigate('deposit')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Deposit</button>
+        <button onclick="navigate('withdraw')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Withdraw</button>
+        <button onclick="navigate('posts')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Posts</button>
+        <button onclick="navigate('news')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">News</button>
+        <button onclick="navigate('referrals')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Referrals</button>
+        <button onclick="navigate('profile')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Profile</button>
+        <button onclick="navigate('settings')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Settings</button>
+        <button onclick="navigate('contact')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Contact</button>
+      </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex-1 flex flex-col ml-0 md:ml-64">
+      <!-- Top Bar -->
+      <div class="bg-white shadow p-4 md:hidden flex justify-between items-center sticky top-0 z-40">
+        <button id="menuBtn" class="text-2xl font-bold">☰</button>
+        <span class="text-lg font-semibold">20X MARKET</span>
+      </div>
+
+      <!-- Main Sections -->
+      <main class="flex-1 overflow-y-auto p-4 pb-20 space-y-6">
+        <section id="home" class="section">
+          <div class="text-center">
+            <h2 class="text-3xl font-bold mb-2">Usename</h2>
+            <p class="text-lg" id="name"></p>
+            <h2 class="text-3xl font-bold mb-2">Balance</h2>
+            <p class="text-lg">Ksh 50.00</p>
+            <p class="mt-4 font-semibold">Phone Number</p>
+            <p id="phones">0741801299</p>
+          </div>
+
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+            <button onclick="showDialog('Withdraw')" class="bg-red-500 text-white p-2 rounded shadow">Withdraw</button>
+            <button onclick="showDialog('Deposit')" class="bg-green-500 text-white p-2 rounded shadow">Deposit</button>
+            <button onclick="showDialog('Free Gift')" class="bg-yellow-500 text-white p-2 rounded shadow">Free Gift</button>
+            <button onclick="showDialog('Profile')" class="bg-blue-500 text-white p-2 rounded shadow">Profile</button>
+            <button onclick="showDialog('Investments')" class="bg-purple-500 text-white p-2 rounded shadow">Investments</button>
+            <button onclick="showDialog('News')" class="bg-indigo-500 text-white p-2 rounded shadow">News</button>
+            <button onclick="showDialog('Proofs')" class="bg-pink-500 text-white p-2 rounded shadow">Proofs</button>
+            <button onclick="showDialog('Referrals')" class="bg-teal-500 text-white p-2 rounded shadow">Referrals</button>
+          </div>
+
+          <div class="mt-6 text-center">
+            <h3 class="font-bold text-lg">Recent Transactions</h3>
+            <p>+1****4332 <span class="text-sm text-gray-500">1 min ago</span> - <span class="text-green-600">+ 4,050 USD</span></p>
+          </div>
+
+          <div class="mt-6 p-4 bg-white shadow rounded">
+            <h3 class="text-xl font-bold mb-2">Hot Asset - Bitcoin (BTC)</h3>
+            <p>Value in Ksh: <strong>13,654,390.24</strong></p>
+            <p>Min Price: 15,000</p>
+            <p>Duration: 5 Days</p>
+            <p>Daily Income: Ksh 20,000</p>
+            <p>Total Income: Ksh 100,000</p>
+            <button class="bg-blue-700 text-white px-4 py-2 rounded mt-2">INVEST</button>
+          </div>
+        </section>
+
+        <section id="products" class="section hidden"><h2 class="text-2xl font-bold">Products</h2></section>
+        <section id="purchases" class="section hidden"><h2 class="text-2xl font-bold">Purchases</h2></section>
+        <section id="deposit" class="section hidden"><h2 class="text-2xl font-bold">Deposit</h2></section>
+        <section id="withdraw" class="section hidden"><h2 class="text-2xl font-bold">Withdraw</h2></section>
+        <section id="posts" class="section hidden"><h2 class="text-2xl font-bold">Posts</h2></section>
+        <section id="news" class="section hidden"><h2 class="text-2xl font-bold">News</h2></section>
+        <section id="referrals" class="section hidden"><h2 class="text-2xl font-bold">Referrals</h2></section>
+        <section id="profile" class="section hidden"><h2 class="text-2xl font-bold">Profile</h2></section>
+        <section id="settings" class="section hidden"><h2 class="text-2xl font-bold">Settings</h2></section>
+        <section id="contact" class="section hidden"><h2 class="text-2xl font-bold">Contact</h2></section>
+      </main>
+
+      <!-- Bottom Bar -->
+      <div class="bg-gradient-to-r from-white via-blue-50 to-white border-t border-gray-200 fixed bottom-0 left-0 right-0 flex justify-around items-center py-3 z-50 shadow-inner">
+        <div class="flex flex-col items-center text-xs text-gray-700">
+          <button onclick="navigate('home')">🏠</button>
+          <span>Home</span>
+        </div>
+        <div class="flex flex-col items-center text-xs text-gray-700">
+          <button onclick="navigate('deposit')">➕</button>
+          <span>Deposit</span>
+        </div>
+        <div class="flex flex-col items-center text-xs text-gray-700">
+          <button onclick="navigate('withdraw')">➖</button>
+          <span>Withdraw</span>
+        </div>
+        <div class="flex flex-col items-center text-xs text-gray-700">
+          <button onclick="navigate('news')">📰</button>
+          <span>News</span>
+        </div>
+        <div class="flex flex-col items-center text-xs text-gray-700">
+          <button onclick="navigate('profile')">👤</button>
+          <span>Profile</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dialog Box -->
+  <div id="dialog" class="fixed inset-0 bg-black bg-opacity-40 flex justify-center items-center hidden z-50">
+    <div class="bg-white p-6 rounded shadow-lg max-w-md w-full">
+      <h2 id="dialogTitle" class="text-xl font-bold mb-4">Action</h2>
+      <input type="text" placeholder="Enter input..." class="w-full border p-2 mb-4" />
+      <div class="flex justify-end space-x-2">
+        <button onclick="closeDialog()" class="bg-gray-400 px-4 py-2 rounded">Cancel</button>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded">Submit</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+     const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    if (!user) {
+      window.location.href = "index.html";
+    } else {
+      document.getElementById("name").textContent = `name: ${user.name}`;
+      document.getElementById("phones").textContent = `Phone: ${user.phone}`;
+    }
+    function navigate(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      if (window.innerWidth < 768) {
+        document.getElementById('sidebar').classList.add('-translate-x-full');
+      }
+    }
+
+    function showDialog(title) {
+      document.getElementById('dialogTitle').innerText = title;
+      document.getElementById('dialog').classList.remove('hidden');
+    }
+
+    function closeDialog() {
+      document.getElementById('dialog').classList.add('hidden');
+    }
+
+    document.getElementById('menuBtn').addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('-translate-x-full');
+    });
+  </script>
+</body>
+
+</html>
