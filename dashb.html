@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Crypto Investment Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
@@ -13,13 +12,20 @@
       }
     }
   </style>
-</head>
+  <script src="https://cdn.tailwindcss.com"></script>
 
+  <!-- Replace this with the correct Payhero SDK URL -->
+  <script src="https://cdn.payhero.co.ke/web.js"></script>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+</head>
 <body class="bg-gray-100 text-gray-900">
   <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <div id="sidebar" class="bg-gradient-to-b from-indigo-600 via-indigo-700 to-indigo-800 text-white w-64 space-y-4 py-6 px-4 border-r border-gray-200 fixed top-0 left-0 h-full z-50 transform -translate-x-full md:translate-x-0 md:relative md:block transition-transform duration-300 ease-in-out shadow-2xl">
-      <div class="text-2xl font-bold mb-6">Dashboard Menu</div>
+      <div class="text-2xl font-bold mb-6">20X Market</div>
       <nav class="space-y-3">
         <button onclick="navigate('home')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Home</button>
         <button onclick="navigate('products')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Products</button>
@@ -46,45 +52,174 @@
       <!-- Main Sections -->
       <main class="flex-1 overflow-y-auto p-4 pb-20 space-y-6">
         <section id="home" class="section">
-          <div class="text-center">
-            <h2 class="text-3xl font-bold mb-2">Usename</h2>
-            <p class="text-lg" id="name"></p>
-            <h2 class="text-3xl font-bold mb-2">Balance</h2>
-            <p class="text-lg">Ksh 50.00</p>
-            <p class="mt-4 font-semibold">Phone Number</p>
-            <p id="phones">0741801299</p>
-          </div>
+          <div class="text-center max-w-4xl mx-auto p-4 space-y-6">
+            <!-- Balance Section -->
+            <div class="bg-white p-4 rounded shadow">
+              <h2 class="text-xl font-bold">Name</h2>
+              <p class="text-2xl text-green-600 font-semibold" id="name"></p>
+              <h2 class="text-xl font-bold">Balance</h2>
+              <p class="text-2xl text-green-600 font-semibold">Ksh 50.00</p>
+              <p class="mt-2">Phone Number</p>
+              <p class="font-semibold" id="phones">0741801299</p>
+            </div>
 
-          <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
-            <button onclick="showDialog('Withdraw')" class="bg-red-500 text-white p-2 rounded shadow">Withdraw</button>
-            <button onclick="showDialog('Deposit')" class="bg-green-500 text-white p-2 rounded shadow">Deposit</button>
-            <button onclick="showDialog('Free Gift')" class="bg-yellow-500 text-white p-2 rounded shadow">Free Gift</button>
-            <button onclick="showDialog('Profile')" class="bg-blue-500 text-white p-2 rounded shadow">Profile</button>
-            <button onclick="showDialog('Investments')" class="bg-purple-500 text-white p-2 rounded shadow">Investments</button>
-            <button onclick="showDialog('News')" class="bg-indigo-500 text-white p-2 rounded shadow">News</button>
-            <button onclick="showDialog('Proofs')" class="bg-pink-500 text-white p-2 rounded shadow">Proofs</button>
-            <button onclick="showDialog('Referrals')" class="bg-teal-500 text-white p-2 rounded shadow">Referrals</button>
-          </div>
+            <!-- Grid Menu -->
+            <div class="grid grid-cols-3 gap-4 text-center text-sm">
+              <div onclick="showDialog('Free Gift')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Free Gift</div>
+              <div onclick="navigate('profile')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Profile</div>
+              <div onclick="navigate('products')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Investments</div>
+              <div onclick="navigate('news')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">News</div>
+              <div onclick="showDialog('Proofs')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Proofs</div>
+              <div onclick="navigate('referrals')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Referrals</div>
+            </div>
 
-          <div class="mt-6 text-center">
-            <h3 class="font-bold text-lg">Recent Transactions</h3>
-            <p>+1****4332 <span class="text-sm text-gray-500">1 min ago</span> - <span class="text-green-600">+ 4,050 USD</span></p>
-          </div>
+            <!-- Transactions -->
+            <div class="mt-6 text-center">
+              <h3 class="font-bold text-lg">Recent Transactions</h3>
+              <p>+1****4332 <span class="text-sm text-gray-500">1 min ago</span> - <span class="text-green-600">+ 4,050 USD</span></p>
+            </div>
 
-          <div class="mt-6 p-4 bg-white shadow rounded">
-            <h3 class="text-xl font-bold mb-2">Hot Asset - Bitcoin (BTC)</h3>
-            <p>Value in Ksh: <strong>13,654,390.24</strong></p>
-            <p>Min Price: 15,000</p>
-            <p>Duration: 5 Days</p>
-            <p>Daily Income: Ksh 20,000</p>
-            <p>Total Income: Ksh 100,000</p>
-            <button class="bg-blue-700 text-white px-4 py-2 rounded mt-2">INVEST</button>
+            <!-- Hot Asset -->
+            <div class="mt-6 p-4 bg-white shadow rounded">
+              <h3 class="text-xl font-bold mb-2">Hot Asset - Bitcoin (BTC)</h3>
+              <p>Value in Ksh: <strong>13,654,390.24</strong></p>
+              <p>Min Price: 15,000</p>
+              <p>Duration: 5 Days</p>
+              <p>Daily Income: Ksh 20,000</p>
+              <p>Total Income: Ksh 100,000</p>
+              <button class="bg-blue-700 text-white px-4 py-2 rounded mt-2">INVEST</button>
+            </div>
           </div>
         </section>
 
         <section id="products" class="section hidden"><h2 class="text-2xl font-bold">Products</h2></section>
         <section id="purchases" class="section hidden"><h2 class="text-2xl font-bold">Purchases</h2></section>
-        <section id="deposit" class="section hidden"><h2 class="text-2xl font-bold">Deposit</h2></section>
+        <section id="deposit" class="section hidden">
+          <!-- DEPOSIT -->
+          <div class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+            <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
+    <h2 class="text-2xl font-bold text-center text-blue-700">Deposit</h2>
+
+    <div>
+      <label class="text-sm text-gray-700 font-medium mb-2 block">Quick Amount</label>
+      <div id="quickAmounts" class="grid grid-cols-3 gap-2"></div>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Amount</label>
+      <input id="amountInput" type="number" placeholder="Enter deposit amount"
+        class="w-full border rounded-lg p-2.5 text-gray-700 focus:ring-2 focus:ring-blue-500"/>
+    </div>
+
+    <div>
+      <label class="block text-sm font-medium text-gray-700 mb-1">Phone</label>
+      <input id="phoneInput" type="tel" value="+254741801299"
+        class="w-full border rounded-lg p-2.5 text-gray-700 focus:ring-2 focus:ring-blue-500"/>
+    </div>
+
+    <button onclick="submitDeposit()"
+      class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg font-semibold shadow">
+      Deposit
+    </button>
+
+    <p class="text-xs text-gray-400 text-center border-t pt-4">Transactions powered by Payhero</p>
+  </div>
+
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
+      authDomain: "alfajiri-database.firebaseapp.com",
+      databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
+      projectId: "alfajiri-database",
+      storageBucket: "alfajiri-database.appspot.com",
+      messagingSenderId: "310417854615",
+      appId: "1:310417854615:web:6f65002a119caeaf9119d2",
+      measurementId: "G-21TBZCRBHM"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Set quick amounts
+    const quickAmountsContainer = document.getElementById('quickAmounts');
+    const amounts = [750, 1000, 2500, 5000, 7500, 10000, 15000, 20000, 25000, 50000, 100000, 200000];
+    amounts.forEach(amount => {
+      const btn = document.createElement('button');
+      btn.className = 'bg-blue-50 hover:bg-blue-100 text-blue-700 py-2 px-3 rounded text-sm';
+      btn.textContent = amount.toLocaleString();
+      btn.onclick = () => setAmount(amount);
+      quickAmountsContainer.appendChild(btn);
+    });
+
+    function setAmount(val) {
+      document.getElementById('amountInput').value = val;
+    }
+
+    // Submit Deposit
+    function submitDeposit() {
+      const amount = document.getElementById('amountInput').value;
+      const phone = document.getElementById('phoneInput').value;
+
+      if (!amount || !phone) {
+        alert("Please enter both amount and phone number.");
+        return;
+      }
+
+      // Check if Payhero is available
+      if (typeof Payhero === 'undefined') {
+        alert("Payment system not ready. Saving to Firebase for testing...");
+
+        // Simulate a successful transaction for development/testing
+        const ref = db.ref('deposits').push();
+        ref.set({
+          amount: parseInt(amount),
+          phone: phone,
+          status: "test-success",
+          transaction_id: "TEST-" + Math.floor(Math.random() * 10000000),
+          date: new Date().toLocaleString()
+        });
+
+        return;
+      }
+
+      // Start Payhero Payment
+      Payhero.initialize({
+        username: "ihc1HJZ5yL4v9cHVzdKo", // Replace with your Payhero username
+        amount: amount,
+        phone: phone,
+        onSuccess: function (response) {
+          const ref = db.ref('deposits').push();
+          const now = new Date().toLocaleString();
+
+          ref.set({
+            amount: parseInt(amount),
+            phone: phone,
+            status: "success",
+            transaction_id: response.transaction_id,
+            date: now
+          });
+
+          alert("Deposit successful! Transaction ID: " + response.transaction_id);
+        },
+        onFailed: function (response) {
+          const ref = db.ref('deposits').push();
+          const now = new Date().toLocaleString();
+
+          ref.set({
+            amount: parseInt(amount),
+            phone: phone,
+            status: "failed",
+            message: response.message,
+            date: now
+          });
+
+          alert("Deposit failed: " + response.message);
+        }
+      });
+    }
+  </script>
+          </div>
+        </section>
         <section id="withdraw" class="section hidden"><h2 class="text-2xl font-bold">Withdraw</h2></section>
         <section id="posts" class="section hidden"><h2 class="text-2xl font-bold">Posts</h2></section>
         <section id="news" class="section hidden"><h2 class="text-2xl font-bold">News</h2></section>
@@ -94,27 +229,22 @@
         <section id="contact" class="section hidden"><h2 class="text-2xl font-bold">Contact</h2></section>
       </main>
 
-      <!-- Bottom Bar -->
+      <!-- Bottom Navigation -->
       <div class="bg-gradient-to-r from-white via-blue-50 to-white border-t border-gray-200 fixed bottom-0 left-0 right-0 flex justify-around items-center py-3 z-50 shadow-inner">
         <div class="flex flex-col items-center text-xs text-gray-700">
-          <button onclick="navigate('home')">🏠</button>
-          <span>Home</span>
+          <button onclick="navigate('home')">🏠</button><span>Home</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
-          <button onclick="navigate('deposit')">➕</button>
-          <span>Deposit</span>
+          <button onclick="navigate('deposit')">➕</button><span>Deposit</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
-          <button onclick="navigate('withdraw')">➖</button>
-          <span>Withdraw</span>
+          <button onclick="navigate('withdraw')">➖</button><span>Withdraw</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
-          <button onclick="navigate('news')">📰</button>
-          <span>News</span>
+          <button onclick="navigate('news')">📰</button><span>News</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
-          <button onclick="navigate('profile')">👤</button>
-          <span>Profile</span>
+          <button onclick="navigate('profile')">👤</button><span>Profile</span>
         </div>
       </div>
     </div>
@@ -133,13 +263,27 @@
   </div>
 
   <script>
-     const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
     if (!user) {
       window.location.href = "index.html";
     } else {
       document.getElementById("name").textContent = `name: ${user.name}`;
       document.getElementById("phones").textContent = `Phone: ${user.phone}`;
     }
+    function navigate(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
+      document.getElementById(id).classList.remove('hidden');
+      if (window.innerWidth < 768) {
+        document.getElementById('sidebar').classList.add('-translate-x-full');
+      }
+    }
+    // Sidebar toggle
+    document.getElementById('menuBtn').addEventListener('click', () => {
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.toggle('show');
+      sidebar.classList.toggle('-translate-x-full');
+    });
+
     function navigate(id) {
       document.querySelectorAll('.section').forEach(s => s.classList.add('hidden'));
       document.getElementById(id).classList.remove('hidden');
@@ -157,11 +301,11 @@
       document.getElementById('dialog').classList.add('hidden');
     }
 
-    document.getElementById('menuBtn').addEventListener('click', () => {
-      const sidebar = document.getElementById('sidebar');
-      sidebar.classList.toggle('-translate-x-full');
+    // Dummy auth (remove if not using login)
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = { name: "John Doe", phone: "0741801299" }; // example fallback
+      document.getElementById("phones").textContent = `Phone: ${user.phone}`;
     });
   </script>
 </body>
-
 </html>
