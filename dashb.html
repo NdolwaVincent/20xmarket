@@ -8,7 +8,7 @@
   <style>
   body {
     font-family: "Times New Roman", Times, serif;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: normal;
     color: #1f2937; /* Tailwind's gray-800 for good readability */
     background-color: #f3f4f6; /* Tailwind's gray-100 */
@@ -67,7 +67,7 @@
       <!-- Main Sections -->
       <main class="flex-1 overflow-y-auto p-4 pb-20 space-y-6">
         <section id="home" class="section">
-          <div class="text-center max-w-4xl mx-auto p-4 space-y-6">
+          <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
             <!-- Balance Section -->
             <div class="bg-white p-4 rounded shadow">
               <h1 class="text-3xl font-bold text-blue-600 mb-4">Welcome to 20X Market</h1>
@@ -290,7 +290,119 @@
 
           </div>
         </section>
-        <section id="withdraw" class="section hidden"><h2 class="text-2xl font-bold">Withdraw</h2></section>
+        <section id="withdraw" class="section hidden">
+          <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
+            <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-6">
+    
+    <!-- Navigation -->
+    <div class="flex justify-between items-center border-b pb-4">
+      <button class="text-blue-600 font-semibold">Withdraw</button>
+      <button class="text-gray-500 hover:text-blue-600">Rules</button>
+      <button class="text-gray-500 hover:text-blue-600">History</button>
+    </div>
+
+    <!-- Balance Card -->
+    <div class="bg-blue-50 text-blue-800 p-4 rounded-xl flex items-center justify-between shadow-sm">
+      <div>
+        <p class="text-sm">Available Balance</p>
+        <p id="balanceDisplay" class="text-2xl font-bold">Ksh 50</p>
+      </div>
+    </div>
+
+    <!-- Withdrawal Form -->
+    <p class="text-sm text-gray-600">Minimum withdrawal amount: Ksh 50</p>
+    <input type="number" id="amountInput"
+           placeholder="Enter amount"
+           class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+
+    <button id="withdrawBtn"
+            class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+      Withdraw
+    </button>
+
+    <!-- Loading Bar -->
+    <div id="loadingBar" class="w-full bg-gray-200 rounded-full h-2 hidden">
+      <div class="bg-blue-600 h-2 rounded-full animate-pulse" style="width: 100%"></div>
+    </div>
+
+    <!-- Feedback -->
+    <p id="message" class="text-center text-sm mt-2 text-red-600"></p>
+  </div>
+
+  <!-- Firebase Module Script -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179",
+      measurementId: "G-ML4GT4MMKV"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Simulated available balance
+    let availableBalance = 50;
+
+    const withdrawBtn = document.getElementById("withdrawBtn");
+    const amountInput = document.getElementById("amountInput");
+    const loadingBar = document.getElementById("loadingBar");
+    const message = document.getElementById("message");
+
+    withdrawBtn.addEventListener("click", async () => {
+      const amount = parseInt(amountInput.value);
+      message.textContent = "";
+
+      if (isNaN(amount) || amount < 50) {
+        message.textContent = "Minimum withdrawal is Ksh 50";
+        return;
+      }
+
+      if (amount > availableBalance) {
+        message.textContent = "Insufficient balance. Withdrawal denied.";
+        return;
+      }
+
+      // Show loading
+      loadingBar.classList.remove("hidden");
+      withdrawBtn.disabled = true;
+      withdrawBtn.textContent = "Processing...";
+
+      try {
+        const userId = "user123"; // Replace with real user UID if authenticated
+        const withdrawalRef = push(ref(db, "withdrawals"));
+        await set(withdrawalRef, {
+          userId,
+          amount,
+          status: "pending",
+          timestamp: serverTimestamp()
+        });
+
+        availableBalance -= amount;
+        document.getElementById("balanceDisplay").textContent = `Ksh ${availableBalance}`;
+        message.textContent = "Withdrawal request sent for approval.";
+        message.classList.remove("text-red-600");
+        message.classList.add("text-green-600");
+        amountInput.value = "";
+      } catch (error) {
+        console.error("Withdrawal error:", error);
+        message.textContent = "An error occurred. Try again.";
+      } finally {
+        loadingBar.classList.add("hidden");
+        withdrawBtn.disabled = false;
+        withdrawBtn.textContent = "Withdraw";
+      }
+    });
+  </script>
+          </div>
+        </section>
         <section id="posts" class="section hidden"><h2 class="text-2xl font-bold">Posts</h2></section>
         <section id="news" class="section hidden"><h2 class="text-2xl font-bold">News</h2></section>
         <section id="referrals" class="section hidden"><h2 class="text-2xl font-bold">Referrals</h2></section>
@@ -399,7 +511,130 @@
           </div>
         </section>
   
-        <section id="contact" class="section hidden"><h2 class="text-2xl font-bold">Contact</h2></section>
+        <section id="contact" class="section hidden">
+          <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
+             <div class="max-w-4xl mx-auto space-y-6">
+
+    <!-- Page Title -->
+    <h3 class="text-3xl font-bold text-center text-blue-700">📞 Contact Support</h3>
+    <p class="text-center text-sm text-gray-600">We're here to help!</p>
+
+    <!-- Contact Links -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="font-semibold text-lg mb-2">📢 Telegram Channel</h2>
+        <a href="https://t.me/bullvexchannel" target="_blank" class="text-blue-600 underline">Join our channel</a>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="font-semibold text-lg mb-2">📞 WhatsApp Support</h2>
+        <a href="https://wa.me/254700000000" target="_blank" class="text-green-600 underline">Chat on WhatsApp</a>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="font-semibold text-lg mb-2">📨 Telegram Support</h2>
+        <a href="https://t.me/bullvexsupport" target="_blank" class="text-blue-600 underline">Message on Telegram</a>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <h2 class="font-semibold text-lg mb-2">✉️ Email</h2>
+        <a href="mailto:support@bullvex.com" class="text-purple-600 underline">support@20xmarkwt.com</a>
+      </div>
+    </div>
+
+    <!-- Guidelines -->
+    <div class="bg-white p-4 rounded shadow space-y-4">
+      <h2 class="text-xl font-bold">📚 Customer Guidelines</h2>
+      <p><strong>⏰ Support Availability:</strong> 9 AM – 7 PM daily. Email for unresolved issues.</p>
+      <p><strong>🎁 Referral Rewards:</strong> Ask your superior for help. Invite friends and earn recharge commissions and bonuses.</p>
+      <p><strong>💳 Deposit Assistance:</strong> Send payment receipts to support for quick help. Always contact official support or your superior agent.</p>
+    </div>
+
+    <!-- Message Form -->
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-bold mb-4">💬 Live Chat / Message Us</h2>
+      <input id="name" type="text" placeholder="Your Name" class="w-full mb-2 p-2 border rounded" />
+      <input id="email" type="email" placeholder="Your Email" class="w-full mb-2 p-2 border rounded" />
+      <textarea id="message" placeholder="Type your message..." rows="4" class="w-full mb-2 p-2 border rounded"></textarea>
+      <button onclick="sendMessage()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 w-full">Send Message</button>
+    </div>
+
+    <!-- Replies Section -->
+    <div class="bg-white p-4 rounded shadow">
+      <h2 class="text-lg font-bold mb-4">📨 Your Messages & Replies</h2>
+      <div id="messagesContainer" class="space-y-4 text-sm"></div>
+    </div>
+
+  </div>
+
+  <!-- Firebase & Logic -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import {
+      getDatabase,
+      ref,
+      push,
+      onValue,
+      query,
+      orderByChild,
+      equalTo
+    } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
+      authDomain: "alfajiri-database.firebaseapp.com",
+      databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
+      projectId: "alfajiri-database",
+      storageBucket: "alfajiri-database.appspot.com",
+      messagingSenderId: "310417854615",
+      appId: "1:310417854615:web:6f65002a119caeaf9119d2"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const messagesRef = ref(db, "supportMessages");
+    const messagesContainer = document.getElementById("messagesContainer");
+
+    // Send new message
+    window.sendMessage = () => {
+      const name = document.getElementById("name").value.trim();
+      const email = document.getElementById("email").value.trim();
+      const message = document.getElementById("message").value.trim();
+      if (!name || !email || !message) {
+        alert("Please fill in all fields.");
+        return;
+      }
+      push(messagesRef, { name, email, message, timestamp: Date.now() });
+      alert("Message sent!");
+      document.getElementById("message").value = "";
+      loadReplies(email);
+    };
+
+    // Load replies by email
+    function loadReplies(email) {
+      const q = query(messagesRef, orderByChild("email"), equalTo(email));
+      onValue(q, (snapshot) => {
+        messagesContainer.innerHTML = "";
+        snapshot.forEach(child => {
+          const data = child.val();
+          const reply = data.reply ? `<div class="text-green-700"><strong>Reply:</strong> ${data.reply}</div>` :
+                                     `<div class="italic text-gray-500">Awaiting reply...</div>`;
+          const card = document.createElement("div");
+          card.className = "border border-gray-200 p-3 rounded bg-gray-50";
+          card.innerHTML = `
+            <div><strong>You:</strong> ${data.message}</div>
+            ${reply}
+          `;
+          messagesContainer.appendChild(card);
+        });
+      });
+    }
+
+    // Auto-load replies when email input changes
+    document.getElementById("email").addEventListener("input", (e) => {
+      const email = e.target.value.trim();
+      if (email.length >= 5 && email.includes("@")) loadReplies(email);
+    });
+  </script>
+          </div>
+        </section>
       </main>
 
       <!-- Bottom Navigation -->
@@ -408,7 +643,7 @@
           <button onclick="navigate('home')">🏠</button><span>Home</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
-          <button onclick="navigate('deposits)">➕</button><span>Deposit</span>
+          <button onclick="navigate('deposit)">➕</button><span>Deposit</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
           <button onclick="navigate('withdraw')">➖</button><span>Withdraw</span>
