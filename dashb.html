@@ -85,14 +85,14 @@
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-      authDomain: "m-sales-45b35.firebaseapp.com",
-      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-      projectId: "m-sales-45b35",
-      storageBucket: "m-sales-45b35.appspot.com",
-      messagingSenderId: "194892525308",
-      appId: "1:194892525308:web:c01af3028c85abdb97f179"
-    };
+    apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+    authDomain: "m-sales-45b35.firebaseapp.com",
+    databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+    projectId: "m-sales-45b35",
+    storageBucket: "m-sales-45b35.appspot.com",
+    messagingSenderId: "194892525308",
+    appId: "1:194892525308:web:c01af3028c85abdb97f179"
+  };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -162,170 +162,200 @@
 
         <section id="products" class="section hidden">
           <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xl w-full">
-          <div class="max-w-5xl mx-auto">
-    <h1 class="text-3xl font-bold text-center mb-8">Investment Opportunities</h1>
-    <div id="productList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  </div>
+          <div class="bg-gray-100 p-6">
+             <div id="inv_productList" class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-  <!-- Modal -->
-  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
-    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
-      <h2 class="text-xl font-bold mb-4">Invest in <span id="modalProductName"></span></h2>
-      <form id="paymentForm" class="space-y-4">
-        <input id="phonen" type="tel" required placeholder="Phone (e.g. 0712345678)" class="w-full p-2 border rounded-lg" />
-        <div>
-          <label class="block text-sm font-medium mb-1">Amount (KES)</label>
-          <div class="flex items-center space-x-2">
-            <button type="button" id="decreaseAmount" class="bg-gray-200 px-3 py-1 rounded">-</button>
-            <input id="amountn" type="number" required class="w-full p-2 border rounded-lg text-center" />
-            <button type="button" id="increaseAmount" class="bg-gray-200 px-3 py-1 rounded">+</button>
-          </div>
+    <!-- Investment Modal -->
+    <div id="inv_investmentModal" class="fixed inset-0 hidden bg-black bg-opacity-50 items-center justify-center z-50">
+      <div class="bg-white rounded-xl w-full max-w-md p-6 relative">
+        <button onclick="document.getElementById('inv_investmentModal').classList.add('hidden')" class="absolute top-2 right-2 text-xl">&times;</button>
+        <h2 class="text-lg font-bold mb-4" id="inv_modalProductName">Investment</h2>
+        <p>Price per Unit: <strong>Ksh <span id="inv_unitPriceText">0</span></strong></p>
+        <div class="flex items-center gap-4 my-4">
+          <button id="inv_decreaseUnit" class="bg-gray-200 px-3 py-1 rounded">-</button>
+          <span id="inv_unitCount">1</span>
+          <button id="inv_increaseUnit" class="bg-gray-200 px-3 py-1 rounded">+</button>
         </div>
-        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Pay Now</button>
-      </form>
-      <div id="payHero" class="mt-4"></div>
-      <p id="statusMsg" class="text-center mt-4 font-semibold text-sm"></p>
-      <button onclick="closeModal()" class="mt-4 w-full text-center text-blue-600 hover:underline">Cancel</button>
+        <p>Daily Income: <strong>Ksh <span id="inv_dailyIncome">0</span></strong></p>
+        <p>Total Income: <strong>Ksh <span id="inv_totalIncome">0</span></strong></p>
+        <p>Total Cost: <strong>Ksh <span id="inv_totalCost">0</span></strong></p>
+
+        <form id="inv_paymentForm" class="space-y-3 mt-4">
+          <input id="inv_phonen" type="tel" required placeholder="Phone (e.g. 0712345678)" class="w-full p-2 border rounded focus:outline-none" />
+          <input id="inv_amountn" type="number" readonly class="w-full p-2 border rounded bg-gray-100" />
+          <button type="submit" class="w-full bg-green-600 text-white p-2 rounded hover:bg-green-700">Deposit Funds</button>
+        </form>
+        <div id="inv_payHero" class="mt-4"></div>
+        <p id="inv_statusMsg" class="text-center mt-4 text-sm font-semibold"></p>
+      </div>
     </div>
-  </div>
 
-  <!-- Firebase + JavaScript -->
-  <script type="module">
-    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+<!-- PayHero Script -->
+<script src="https://applet.payherokenya.com/cdn/button_sdk.js?v=3.1"></script>
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-      authDomain: "m-sales-45b35.firebaseapp.com",
-      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-      projectId: "m-sales-45b35",
-      storageBucket: "m-sales-45b35.appspot.com",
-      messagingSenderId: "194892525308",
-      appId: "1:194892525308:web:c01af3028c85abdb97f179"
-    };
+<!-- Firebase App Script (as ES Module) -->
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  const firebaseConfig = {
+    apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+    authDomain: "m-sales-45b35.firebaseapp.com",
+    databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+    projectId: "m-sales-45b35",
+    storageBucket: "m-sales-45b35.appspot.com",
+    messagingSenderId: "194892525308",
+    appId: "1:194892525308:web:c01af3028c85abdb97f179"
+  };
 
-    let app;
-    if (!getApps().length) {
-      app = initializeApp(firebaseConfig);
-    } else {
-      app = getApps()[0];
+  // Prevent Firebase duplicate initialization
+  const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  const db = getDatabase(app);
+
+  // Get DOM elements
+  const productList = document.getElementById("inv_productList");
+  const modal = document.getElementById("inv_investmentModal");
+  const modalProductName = document.getElementById("inv_modalProductName");
+  const unitPriceText = document.getElementById("inv_unitPriceText");
+  const phoneInput = document.getElementById("inv_phonen");
+  const amountInput = document.getElementById("inv_amountn");
+  const totalCostEl = document.getElementById("inv_totalCost");
+  const dailyIncomeText = document.getElementById("inv_dailyIncome");
+  const totalIncomeText = document.getElementById("inv_totalIncome");
+  const unitCountEl = document.getElementById("inv_unitCount");
+  const payHeroDiv = document.getElementById("inv_payHero");
+  const statusMsg = document.getElementById("inv_statusMsg");
+
+  let units = 1;
+  let currentProduct = {};
+
+  function updateModalValues() {
+    const total = units * currentProduct.minPrice;
+    const daily = units * currentProduct.dailyIncome;
+    const totalIncome = daily * currentProduct.duration;
+
+    unitCountEl.textContent = units;
+    totalCostEl.textContent = total;
+    amountInput.value = total;
+    dailyIncomeText.textContent = daily;
+    totalIncomeText.textContent = totalIncome;
+  }
+
+  document.getElementById("inv_increaseUnit").onclick = () => {
+    units++;
+    updateModalValues();
+  };
+
+  document.getElementById("inv_decreaseUnit").onclick = () => {
+    if (units > 1) {
+      units--;
+      updateModalValues();
+    }
+  };
+
+  onValue(ref(db, "products"), snapshot => {
+    productList.innerHTML = "";
+    snapshot.forEach(child => {
+      const p = child.val();
+      const card = document.createElement("div");
+      card.className = "bg-white p-6 rounded-xl shadow";
+
+      card.innerHTML = `
+        <h2 class="text-xl font-bold">${p.productName}</h2>
+        <p class="text-gray-700">Value: <strong>Ksh ${p.value}</strong></p>
+        <p class="text-gray-700">Min Price: <strong>Ksh ${p.minPrice}</strong></p>
+        <p class="text-gray-700">Duration: <strong>${p.duration} days</strong></p>
+        <p class="text-gray-700">Daily Income: <strong>Ksh ${p.dailyIncome}</strong></p>
+        <p class="text-gray-700 mb-2">Total Income: <strong>Ksh ${p.totalIncome}</strong></p>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 investBtn">Invest</button>
+      `;
+
+      card.querySelector(".investBtn").onclick = () => {
+        currentProduct = p;
+        units = 1;
+        modalProductName.textContent = p.productName;
+        unitPriceText.textContent = p.minPrice;
+        phoneInput.value = "";
+        statusMsg.textContent = "";
+        payHeroDiv.innerHTML = "";
+        updateModalValues();
+        modal.classList.remove("hidden");
+      };
+
+      productList.appendChild(card);
+    });
+  });
+
+  function generateUUID() {
+    return 'xxxxxxxxyxxx'.replace(/[xy]/g, function (c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  document.getElementById("inv_paymentForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const phone = phoneInput.value.trim();
+    const amount = parseFloat(amountInput.value.trim());
+
+    if (!phone || amount < currentProduct.minPrice) {
+      statusMsg.textContent = "Enter valid phone and amount.";
+      statusMsg.className = "text-red-600";
+      return;
     }
 
-    const database = getDatabase(app);
-
-    const productList = document.getElementById("productList");
-    const modal = document.getElementById("modal");
-    const modalProductName = document.getElementById("modalProductName");
-    const amountInput = document.getElementById("amountn");
-    const phoneInput = document.getElementById("phonen");
-    const statusMsg = document.getElementById("statusMsg");
-    const payHeroDiv = document.getElementById("payHero");
-
-    let currentMinPrice = 0;
-    let currentProductName = "";
-
-    const productsRef = ref(database, "products");
-
-    onValue(productsRef, snapshot => {
-      productList.innerHTML = "";
-      snapshot.forEach(child => {
-        const p = child.val();
-        const card = document.createElement("div");
-        card.className = "bg-white p-6 rounded-lg shadow border space-y-2";
-        card.innerHTML = `
-          <h2 class="text-xl font-bold text-gray-800">${p.productName}</h2>
-          <p class="text-sm text-gray-500">Value in Ksh</p>
-          <p class="text-2xl font-semibold text-green-600">Ksh ${p.value}</p>
-          <p class="text-gray-700"><strong>Min Price:</strong> Ksh ${p.minPrice}</p>
-          <p class="text-gray-700"><strong>Duration:</strong> ${p.duration} Days</p>
-          <p class="text-gray-700"><strong>Daily Income:</strong> Ksh ${p.dailyIncome}</p>
-          <p class="text-gray-700 mb-4"><strong>Total Income:</strong> Ksh ${p.totalIncome}</p>
-          <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 investBtn"
-            data-min="${p.minPrice}" 
-            data-product="${p.productName}">INVEST</button>
-        `;
-        productList.appendChild(card);
-      });
-
-      document.querySelectorAll(".investBtn").forEach(button => {
-        button.addEventListener("click", () => {
-          currentMinPrice = parseFloat(button.getAttribute("data-min"));
-          currentProductName = button.getAttribute("data-product");
-          amountInput.value = currentMinPrice;
-          phoneInput.value = "";
-          modalProductName.textContent = currentProductName;
-          statusMsg.textContent = "";
-          payHeroDiv.innerHTML = "";
-          modal.classList.remove("hidden");
-        });
-      });
+    PayHero.init({
+      paymentUrl: "https://app.payhero.co.ke/lipwa/1068",
+      width: "100%",
+      height: "100%",
+      containerId: "inv_payHero",
+      channelID: 2414,
+      amount: amount,
+      phone: phone,
+      name: "Customer",
+      reference: currentProduct.productName + "_" + Date.now(),
+      buttonName: `Pay KES ${amount}`,
+      buttonColor: "#00a884"
     });
 
-    document.getElementById("increaseAmount").onclick = () => {
-      amountInput.value = parseInt(amountInput.value || currentMinPrice) + 100;
-    };
+    statusMsg.textContent = "Processing payment...";
+    statusMsg.className = "text-blue-600";
+  });
 
-    document.getElementById("decreaseAmount").onclick = () => {
-      let val = parseInt(amountInput.value || currentMinPrice) - 100;
-      amountInput.value = val >= currentMinPrice ? val : currentMinPrice;
-    };
+  window.addEventListener("message", function (event) {
+    if (event.data?.paymentSuccess) {
+      const payment = event.data;
 
-    document.getElementById("paymentForm").addEventListener("submit", function (e) {
-      e.preventDefault();
-      const phone = phoneInput.value.trim();
-      const amount = parseFloat(amountInput.value.trim());
-
-      if (!phone || amount < currentMinPrice) {
-        statusMsg.textContent = "Enter a valid phone and amount ≥ minimum.";
-        statusMsg.className = "text-red-600 text-sm text-center mt-4";
-        return;
-      }
-
-      PayHero.init({
-        paymentUrl: "https://app.payhero.co.ke/lipwa/1068",
-        containerId: "payHero",
-        channelID: 2414,
-        amount: amount,
-        phone: phone,
-        name: "Customer",
-        reference: currentProductName + "_" + Date.now(),
-        buttonName: `Pay KES ${amount}`,
-        buttonColor: "#00a884",
-        width: "100%",
-        height: "100%"
+      push(ref(db, "payments"), {
+        phone: payment.phone,
+        amount: payment.amount,
+        customerName: payment.customerName || "N/A",
+        reference: payment.reference,
+        providerReference: payment.providerReference,
+        provider: payment.provider,
+        timestamp: new Date().toISOString(),
+        product: currentProduct.productName
       });
 
-      statusMsg.textContent = "Processing payment...";
-      statusMsg.className = "text-blue-600 text-sm text-center mt-4";
-    });
+      push(ref(db, "investments"), {
+        investmentId: generateUUID(),
+        product: currentProduct.productName,
+        phone: payment.phone,
+        units: units,
+        totalCost: payment.amount,
+        timestamp: new Date().toISOString()
+      });
 
-    window.addEventListener("message", function (event) {
-      if (event.data?.paymentSuccess) {
-        const payment = event.data;
-        const paymentsRef = ref(database, "payments");
-        push(paymentsRef, {
-          phone: payment.phone,
-          amount: payment.amount,
-          customerName: payment.customerName || "N/A",
-          reference: payment.reference,
-          providerReference: payment.providerReference,
-          provider: payment.provider,
-          timestamp: new Date().toISOString(),
-          product: currentProductName
-        });
+      statusMsg.textContent = "✅ Payment successful! Ref: " + payment.providerReference;
+      statusMsg.className = "text-green-600";
+    } else if (event.data?.paymentSuccess === false) {
+      statusMsg.textContent = "❌ Payment failed. Try again.";
+      statusMsg.className = "text-red-600";
+    }
+  });
+</script>
 
-        statusMsg.textContent = "✅ Payment successful! Ref: " + payment.providerReference;
-        statusMsg.className = "text-green-600 text-sm text-center mt-4";
-      } else if (event.data?.paymentSuccess === false) {
-        statusMsg.textContent = "❌ Payment failed. Try again.";
-        statusMsg.className = "text-red-600 text-sm text-center mt-4";
-      }
-    });
-
-    window.closeModal = function () {
-      modal.classList.add("hidden");
-    };
-  </script>
+          </div>
 
         </div>
       </section>
@@ -363,14 +393,15 @@
     document.addEventListener('DOMContentLoaded', function () {
   // Initialize Firebase
   const firebaseConfig = {
-      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-      authDomain: "m-sales-45b35.firebaseapp.com",
-      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-      projectId: "m-sales-45b35",
-      storageBucket: "m-sales-45b35.appspot.com",
-      messagingSenderId: "194892525308",
-      appId: "1:194892525308:web:c01af3028c85abdb97f179"
-    };
+    apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
+    authDomain: "alfajiri-database.firebaseapp.com",
+    databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
+    projectId: "alfajiri-database",
+    storageBucket: "alfajiri-database.appspot.com",
+    messagingSenderId: "310417854615",
+    appId: "1:310417854615:web:6f65002a119caeaf9119d2",
+    measurementId: "G-21TBZCRBHM"
+  };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
@@ -627,15 +658,16 @@
   import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
- const firebaseConfig = {
-      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-      authDomain: "m-sales-45b35.firebaseapp.com",
-      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-      projectId: "m-sales-45b35",
-      storageBucket: "m-sales-45b35.appspot.com",
-      messagingSenderId: "194892525308",
-      appId: "1:194892525308:web:c01af3028c85abdb97f179"
-    };
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
+    authDomain: "alfajiri-database.firebaseapp.com",
+    databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
+    projectId: "alfajiri-database",
+    storageBucket: "alfajiri-database.appspot.com",
+    messagingSenderId: "310417854615",
+    appId: "1:310417854615:web:6f65002a119caeaf9119d2",
+    measurementId: "G-21TBZCRBHM"
+  };
 
   let app;
   if (!getApps().length) {
@@ -846,20 +878,20 @@
     <!-- Contact Links -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div class="bg-white p-4 rounded shadow">
-        <h2 class="font-semibold text-lg mb-2">📢 Telegram Channel</h2>
-        <a href="https://t.me/bullvexchannel" target="_blank" class="text-blue-600 underline">Join our channel</a>
+        <h2 class="font-semibold text-lg mb-2">📞 WhatsApp Support</h2>
+        <a href="https://chat.whatsapp.com/Cwoo9xkDMYX5lCWV7ouRyJ" target="_blank" class="text-green-600 underline">Join Our WhatsApp Group</a>
       </div>
       <div class="bg-white p-4 rounded shadow">
         <h2 class="font-semibold text-lg mb-2">📞 WhatsApp Support</h2>
-        <a href="https://wa.me/254700000000" target="_blank" class="text-green-600 underline">Chat on WhatsApp</a>
+        <a href="https://wa.me/message/PMAK6L6SPYCFH1" target="_blank" class="text-green-600 underline">Chat us on WhatsApp</a>
       </div>
       <div class="bg-white p-4 rounded shadow">
         <h2 class="font-semibold text-lg mb-2">📨 Telegram Support</h2>
-        <a href="https://t.me/bullvexsupport" target="_blank" class="text-blue-600 underline">Message on Telegram</a>
+        <a href="20xmarketglobal@gmail.com" target="_blank" class="text-blue-600 underline">Message on Telegram</a>
       </div>
       <div class="bg-white p-4 rounded shadow">
         <h2 class="font-semibold text-lg mb-2">✉️ Email</h2>
-        <a href="mailto:support@bullvex.com" class="text-purple-600 underline">support@20xmarkwt.com</a>
+        <a href="20xmarketglobal@gmail.com" class="text-purple-600 underline">20xmarketglobal@gmail.com</a>
       </div>
     </div>
 
@@ -901,14 +933,14 @@
       equalTo
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-   const firebaseConfig = {
-      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-      authDomain: "m-sales-45b35.firebaseapp.com",
-      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-      projectId: "m-sales-45b35",
-      storageBucket: "m-sales-45b35.appspot.com",
-      messagingSenderId: "194892525308",
-      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
+      authDomain: "alfajiri-database.firebaseapp.com",
+      databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
+      projectId: "alfajiri-database",
+      storageBucket: "alfajiri-database.appspot.com",
+      messagingSenderId: "310417854615",
+      appId: "1:310417854615:web:6f65002a119caeaf9119d2"
     };
 
     const app = initializeApp(firebaseConfig);
