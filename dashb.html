@@ -85,13 +85,13 @@
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
     const firebaseConfig = {
-      apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
-      authDomain: "alfajiri-database.firebaseapp.com",
-      databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
-      projectId: "alfajiri-database",
-      storageBucket: "alfajiri-database.appspot.com",
-      messagingSenderId: "310417854615",
-      appId: "1:310417854615:web:6f65002a119caeaf9119d2"
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -160,7 +160,175 @@
           </div>
         </section>
 
-        <section id="products" class="section hidden"><h2 class="text-2xl font-bold">Products</h2></section>
+        <section id="products" class="section hidden">
+          <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xl w-full">
+          <div class="max-w-5xl mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-8">Investment Opportunities</h1>
+    <div id="productList" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+    <div class="bg-white p-6 rounded-xl w-full max-w-md shadow-lg">
+      <h2 class="text-xl font-bold mb-4">Invest in <span id="modalProductName"></span></h2>
+      <form id="paymentForm" class="space-y-4">
+        <input id="phonen" type="tel" required placeholder="Phone (e.g. 0712345678)" class="w-full p-2 border rounded-lg" />
+        <div>
+          <label class="block text-sm font-medium mb-1">Amount (KES)</label>
+          <div class="flex items-center space-x-2">
+            <button type="button" id="decreaseAmount" class="bg-gray-200 px-3 py-1 rounded">-</button>
+            <input id="amountn" type="number" required class="w-full p-2 border rounded-lg text-center" />
+            <button type="button" id="increaseAmount" class="bg-gray-200 px-3 py-1 rounded">+</button>
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-green-600 text-white py-2 rounded hover:bg-green-700 transition">Pay Now</button>
+      </form>
+      <div id="payHero" class="mt-4"></div>
+      <p id="statusMsg" class="text-center mt-4 font-semibold text-sm"></p>
+      <button onclick="closeModal()" class="mt-4 w-full text-center text-blue-600 hover:underline">Cancel</button>
+    </div>
+  </div>
+
+  <!-- Firebase + JavaScript -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue, push } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    };
+
+    let app;
+    if (!getApps().length) {
+      app = initializeApp(firebaseConfig);
+    } else {
+      app = getApps()[0];
+    }
+
+    const database = getDatabase(app);
+
+    const productList = document.getElementById("productList");
+    const modal = document.getElementById("modal");
+    const modalProductName = document.getElementById("modalProductName");
+    const amountInput = document.getElementById("amountn");
+    const phoneInput = document.getElementById("phonen");
+    const statusMsg = document.getElementById("statusMsg");
+    const payHeroDiv = document.getElementById("payHero");
+
+    let currentMinPrice = 0;
+    let currentProductName = "";
+
+    const productsRef = ref(database, "products");
+
+    onValue(productsRef, snapshot => {
+      productList.innerHTML = "";
+      snapshot.forEach(child => {
+        const p = child.val();
+        const card = document.createElement("div");
+        card.className = "bg-white p-6 rounded-lg shadow border space-y-2";
+        card.innerHTML = `
+          <h2 class="text-xl font-bold text-gray-800">${p.productName}</h2>
+          <p class="text-sm text-gray-500">Value in Ksh</p>
+          <p class="text-2xl font-semibold text-green-600">Ksh ${p.value}</p>
+          <p class="text-gray-700"><strong>Min Price:</strong> Ksh ${p.minPrice}</p>
+          <p class="text-gray-700"><strong>Duration:</strong> ${p.duration} Days</p>
+          <p class="text-gray-700"><strong>Daily Income:</strong> Ksh ${p.dailyIncome}</p>
+          <p class="text-gray-700 mb-4"><strong>Total Income:</strong> Ksh ${p.totalIncome}</p>
+          <button class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 investBtn"
+            data-min="${p.minPrice}" 
+            data-product="${p.productName}">INVEST</button>
+        `;
+        productList.appendChild(card);
+      });
+
+      document.querySelectorAll(".investBtn").forEach(button => {
+        button.addEventListener("click", () => {
+          currentMinPrice = parseFloat(button.getAttribute("data-min"));
+          currentProductName = button.getAttribute("data-product");
+          amountInput.value = currentMinPrice;
+          phoneInput.value = "";
+          modalProductName.textContent = currentProductName;
+          statusMsg.textContent = "";
+          payHeroDiv.innerHTML = "";
+          modal.classList.remove("hidden");
+        });
+      });
+    });
+
+    document.getElementById("increaseAmount").onclick = () => {
+      amountInput.value = parseInt(amountInput.value || currentMinPrice) + 100;
+    };
+
+    document.getElementById("decreaseAmount").onclick = () => {
+      let val = parseInt(amountInput.value || currentMinPrice) - 100;
+      amountInput.value = val >= currentMinPrice ? val : currentMinPrice;
+    };
+
+    document.getElementById("paymentForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+      const phone = phoneInput.value.trim();
+      const amount = parseFloat(amountInput.value.trim());
+
+      if (!phone || amount < currentMinPrice) {
+        statusMsg.textContent = "Enter a valid phone and amount ≥ minimum.";
+        statusMsg.className = "text-red-600 text-sm text-center mt-4";
+        return;
+      }
+
+      PayHero.init({
+        paymentUrl: "https://app.payhero.co.ke/lipwa/1068",
+        containerId: "payHero",
+        channelID: 2414,
+        amount: amount,
+        phone: phone,
+        name: "Customer",
+        reference: currentProductName + "_" + Date.now(),
+        buttonName: `Pay KES ${amount}`,
+        buttonColor: "#00a884",
+        width: "100%",
+        height: "100%"
+      });
+
+      statusMsg.textContent = "Processing payment...";
+      statusMsg.className = "text-blue-600 text-sm text-center mt-4";
+    });
+
+    window.addEventListener("message", function (event) {
+      if (event.data?.paymentSuccess) {
+        const payment = event.data;
+        const paymentsRef = ref(database, "payments");
+        push(paymentsRef, {
+          phone: payment.phone,
+          amount: payment.amount,
+          customerName: payment.customerName || "N/A",
+          reference: payment.reference,
+          providerReference: payment.providerReference,
+          provider: payment.provider,
+          timestamp: new Date().toISOString(),
+          product: currentProductName
+        });
+
+        statusMsg.textContent = "✅ Payment successful! Ref: " + payment.providerReference;
+        statusMsg.className = "text-green-600 text-sm text-center mt-4";
+      } else if (event.data?.paymentSuccess === false) {
+        statusMsg.textContent = "❌ Payment failed. Try again.";
+        statusMsg.className = "text-red-600 text-sm text-center mt-4";
+      }
+    });
+
+    window.closeModal = function () {
+      modal.classList.add("hidden");
+    };
+  </script>
+
+        </div>
+      </section>
         <section id="purchases" class="section hidden"><h2 class="text-2xl font-bold">Purchases</h2></section>
         <section id="deposit" class="section hidden"><h2 class="text-2xl font-bold">Deposit</h2>
           <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
@@ -195,15 +363,14 @@
     document.addEventListener('DOMContentLoaded', function () {
   // Initialize Firebase
   const firebaseConfig = {
-    apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
-    authDomain: "alfajiri-database.firebaseapp.com",
-    databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
-    projectId: "alfajiri-database",
-    storageBucket: "alfajiri-database.appspot.com",
-    messagingSenderId: "310417854615",
-    appId: "1:310417854615:web:6f65002a119caeaf9119d2",
-    measurementId: "G-21TBZCRBHM"
-  };
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
@@ -406,7 +573,164 @@
         <section id="posts" class="section hidden"><h2 class="text-2xl font-bold">Posts</h2></section>
         <section id="news" class="section hidden"><h2 class="text-2xl font-bold">News</h2></section>
         <section id="referrals" class="section hidden"><h2 class="text-2xl font-bold">Referrals</h2></section>
-        <section id="profile" class="section hidden"><h2 class="text-2xl font-bold">Profile</h2></section>
+        <section id="profile" class="section hidden">
+          <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
+            <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xl w-full">
+    <div class="text-center mb-6">
+      <h2 class="text-3xl font-bold text-blue-600">Your Profile</h2>
+      <p class="text-gray-500">Manage your account settings and details</p>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm text-gray-700 font-semibold">Name</label>
+        <input id="userNames" type="text" class="w-full mt-1 border border-gray-300 px-4 py-2 rounded-xl" />
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-700 font-semibold">Email</label>
+        <input id="userEmails" type="email" class="w-full mt-1 border border-gray-300 px-4 py-2 rounded-xl" />
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-700 font-semibold">Phone Number</label>
+        <input id="userPhones" type="text" disabled class="w-full mt-1 bg-gray-100 px-4 py-2 rounded-xl text-gray-600"/>
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-700 font-semibold">Referral Code</label>
+        <input id="userRefcode" type="text" disabled class="w-full mt-1 bg-gray-100 px-4 py-2 rounded-xl text-gray-600"/>
+      </div>
+
+      <div>
+        <label class="block text-sm text-gray-700 font-semibold">Referred By</label>
+        <input id="userReferredBy" type="text" disabled class="w-full mt-1 bg-gray-100 px-4 py-2 rounded-xl text-gray-600"/>
+      </div>
+
+      <div class="mt-6">
+        <h3 class="text-lg font-bold text-gray-800 mb-2">Change Password</h3>
+        <input id="newPassword" type="password" placeholder="New Password" class="w-full mb-2 border px-4 py-2 rounded-xl"/>
+        <input id="confirmNewPassword" type="password" placeholder="Confirm Password" class="w-full mb-4 border px-4 py-2 rounded-xl"/>
+        <button id="updatePasswordBtn" class="w-full bg-yellow-500 text-white py-2 rounded-xl hover:bg-yellow-600">Update Password</button>
+      </div>
+
+      <div class="flex gap-2 mt-6">
+        <button id="updateProfileBtn" class="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700">Save Changes</button>
+        <button id="logoutBtn" class="w-full bg-red-500 text-white py-2 rounded-xl hover:bg-red-600">Logout</button>
+      </div>
+
+      <p id="profileMsg" class="text-center text-sm text-green-600 mt-4 hidden"></p>
+    </div>
+  </div>
+
+  <script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+ const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    };
+
+  let app;
+  if (!getApps().length) {
+    app = initializeApp(firebaseConfig);
+  } else {
+    app = getApps()[0];
+  }
+
+  const db = getDatabase(app);
+
+  document.addEventListener("DOMContentLoaded", () => {
+    const user = JSON.parse(localStorage.getItem("loggedInUser"));
+    const phone = user?.phone;
+
+    const nameField = document.getElementById("userNames");
+    const emailField = document.getElementById("userEmails");
+    const phoneField = document.getElementById("userPhones");
+    const refcodeField = document.getElementById("userRefcode");
+    const referredByField = document.getElementById("userReferredBy");
+    const updateProfileBtn = document.getElementById("updateProfileBtn");
+    const updatePasswordBtn = document.getElementById("updatePasswordBtn");
+    const newPassword = document.getElementById("newPassword");
+    const confirmNewPassword = document.getElementById("confirmNewPassword");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const profileMsg = document.getElementById("profileMsg");
+
+    async function loadProfile() {
+      try {
+        const snapshot = await get(ref(db, `users/${phone}`));
+        if (snapshot.exists()) {
+          const data = snapshot.val();
+          nameField.value = data.name || "";
+          emailField.value = data.email || "";
+          phoneField.value = phone;
+          refcodeField.value = data.refcode || "";
+          referredByField.value = data.referredBy || "N/A";
+        }
+      } catch (err) {
+        alert("Failed to load profile.");
+      }
+    }
+
+    updateProfileBtn.addEventListener("click", async () => {
+      const updates = {
+        name: nameField.value.trim(),
+        email: emailField.value.trim()
+      };
+      try {
+        await update(ref(db, `users/${phone}`), updates);
+        profileMsg.textContent = "Profile updated successfully!";
+        profileMsg.classList.remove("hidden");
+        setTimeout(() => profileMsg.classList.add("hidden"), 3000);
+      } catch {
+        alert("Failed to update profile.");
+      }
+    });
+
+    updatePasswordBtn.addEventListener("click", async () => {
+      const pwd = newPassword.value.trim();
+      const cpwd = confirmNewPassword.value.trim();
+
+      if (!pwd || !cpwd || pwd !== cpwd) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      try {
+        await update(ref(db, `users/${phone}`), { password: pwd });
+        newPassword.value = "";
+        confirmNewPassword.value = "";
+        profileMsg.textContent = "Password updated successfully!";
+        profileMsg.classList.remove("hidden");
+        setTimeout(() => profileMsg.classList.add("hidden"), 3000);
+      } catch {
+        alert("Failed to update password.");
+      }
+    });
+
+    logoutBtn.addEventListener("click", () => {
+      localStorage.removeItem("loggedInUser");
+      window.location.href = "index.html";
+    });
+
+    if (!phone) {
+      alert("You must be logged in.");
+      window.location.href = "index.html";
+    } else {
+      loadProfile();
+    }
+  });
+</script>
+
+          </div>
+          
+        </section>
         <section id="settings" class="section hidden"><h2 class="text-2xl font-bold">Settings</h2>
           <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6" >
             <div class="max-w-5xl mx-auto">
@@ -577,14 +901,14 @@
       equalTo
     } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
-      authDomain: "alfajiri-database.firebaseapp.com",
-      databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
-      projectId: "alfajiri-database",
-      storageBucket: "alfajiri-database.appspot.com",
-      messagingSenderId: "310417854615",
-      appId: "1:310417854615:web:6f65002a119caeaf9119d2"
+   const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
     };
 
     const app = initializeApp(firebaseConfig);
