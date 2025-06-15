@@ -47,7 +47,7 @@
         <button onclick="navigate('purchases')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Purchases</button>
         <button onclick="navigate('deposit')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Deposit</button>
         <button onclick="navigate('withdraw')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Withdraw</button>
-        <button onclick="navigate('posts')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Posts</button>
+        <button onclick="navigate('posts')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Payment Records</button>
         <button onclick="navigate('news')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">News</button>
         <button onclick="navigate('referrals')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Referrals</button>
         <button onclick="navigate('profile')" class="block w-full text-left hover:text-yellow-300 py-2 px-3 rounded">Profile</button>
@@ -147,11 +147,11 @@
 
             <!-- Grid Menu -->
             <div class="grid grid-cols-3 gap-4 text-center text-sm">
-              <div onclick="showDialog('Free Gift')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Free Gift</div>
+              <div onclick="showDialog('Free Gift')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Offers</div>
               <div onclick="navigate('profile')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Profile</div>
-              <div onclick="navigate('products')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Investments</div>
+              <div onclick="navigate('products')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Products</div>
               <div onclick="navigate('news')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">News</div>
-              <div onclick="showDialog('Proofs')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Proofs</div>
+              <div onclick="navigate('purchases')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Purchase</div>
               <div onclick="navigate('referrals')" class="bg-white p-4 rounded shadow cursor-pointer hover:bg-indigo-100">Referrals</div>
             </div>
 
@@ -397,7 +397,115 @@
   </script>
 </section>
 
-        <section id="purchases" class="section hidden"><h2 class="text-2xl font-bold">Purchases</h2></section>
+       <section id="purchases" class="section hidden">
+  <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+    <div class="bg-gradient-to-r from-blue-50 to-white rounded-2xl shadow-lg p-6 md:p-10 space-y-6">
+      <h2 class="text-3xl font-bold text-center text-blue-700">My Purchase Records</h2>
+
+      <!-- Hidden phone number -->
+      <span id="userphone" class="hidden">0712345678</span>
+
+      <!-- Table Wrapper -->
+      <div id="tableContainer" class="overflow-x-auto hidden">
+        <table class="min-w-full table-auto border-collapse rounded-lg overflow-hidden">
+          <thead class="bg-blue-100 text-blue-800 text-sm uppercase">
+            <tr>
+              <th class="px-4 py-3 text-left">Product</th>
+              <th class="px-4 py-3 text-left">Units</th>
+              <th class="px-4 py-3 text-left">Total Cost (Ksh)</th>
+              <th class="px-4 py-3 text-left">Date</th>
+            </tr>
+          </thead>
+          <tbody id="purchaseTableBody" class="bg-white divide-y divide-blue-100 text-gray-700 text-sm"></tbody>
+        </table>
+      </div>
+
+      <!-- Total Investment -->
+      <div id="totalInvestment" class="text-right text-xl font-semibold text-blue-900 hidden">
+        Total Investment: Ksh <span id="totalAmount">0</span>
+      </div>
+
+      <!-- No Data Message -->
+      <div id="noDataMsg" class="text-center text-gray-500 mt-4 hidden">
+        No purchases found.
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    };
+
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    const db = getDatabase(app);
+
+    const phone = document.getElementById("userphone").textContent.trim();
+    const tableBody = document.getElementById("purchaseTableBody");
+    const tableContainer = document.getElementById("tableContainer");
+    const totalDiv = document.getElementById("totalInvestment");
+    const totalAmountEl = document.getElementById("totalAmount");
+    const noDataMsg = document.getElementById("noDataMsg");
+
+    function fetchPurchasesByPhone(phone) {
+      tableBody.innerHTML = "";
+      tableContainer.classList.add("hidden");
+      totalDiv.classList.add("hidden");
+      noDataMsg.classList.add("hidden");
+
+      if (!phone) {
+        noDataMsg.textContent = "Phone number not found.";
+        noDataMsg.classList.remove("hidden");
+        return;
+      }
+
+      let total = 0;
+      const investmentsRef = ref(db, "investments");
+      onValue(investmentsRef, snapshot => {
+        let found = false;
+        tableBody.innerHTML = "";
+
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.phone === phone) {
+            found = true;
+            total += parseFloat(data.totalCost || 0);
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="px-4 py-3">${data.product}</td>
+              <td class="px-4 py-3">${data.units}</td>
+              <td class="px-4 py-3">Ksh ${data.totalCost}</td>
+              <td class="px-4 py-3">${new Date(data.timestamp).toLocaleString()}</td>
+            `;
+            tableBody.appendChild(row);
+          }
+        });
+
+        if (found) {
+          tableContainer.classList.remove("hidden");
+          totalAmountEl.textContent = total.toLocaleString();
+          totalDiv.classList.remove("hidden");
+        } else {
+          noDataMsg.classList.remove("hidden");
+        }
+      }, { onlyOnce: true });
+    }
+
+    fetchPurchasesByPhone(phone);
+  </script>
+</section>
+
         <section id="deposit" class="section hidden"><h2 class="text-2xl font-bold">Deposit</h2>
           <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
             <h2 class="text-2xl font-bold text-center text-blue-700">Deposit</h2>
@@ -639,9 +747,240 @@
   </script>
           </div>
         </section>
-        <section id="posts" class="section hidden"><h2 class="text-2xl font-bold">Posts</h2></section>
+        <section id="posts" class="section hidden">
+  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+    <div class="bg-white shadow-2xl rounded-3xl overflow-hidden p-6 sm:p-10 space-y-6 border border-green-200">
+      <h2 class="text-3xl font-bold text-center text-green-700 mb-4">My Payment Records</h2>
+
+      <!-- User phone (auto-filled) -->
+      <span id="userphone" class="hidden">0712345678</span>
+
+      <!-- Responsive Table Wrapper -->
+      <div id="paymentTableContainer" class="overflow-x-auto hidden rounded-xl">
+        <table class="min-w-full divide-y divide-green-200 bg-white text-sm text-gray-700">
+          <thead class="bg-green-100 text-green-800 uppercase text-xs sm:text-sm">
+            <tr>
+              <th class="px-4 py-3 text-left">Amount (Ksh)</th>
+              <th class="px-4 py-3 text-left">Reference</th>
+              <th class="px-4 py-3 text-left">Provider</th>
+              <th class="px-4 py-3 text-left">Date</th>
+            </tr>
+          </thead>
+          <tbody id="paymentTableBody" class="divide-y divide-gray-100"></tbody>
+        </table>
+      </div>
+
+      <!-- Total Paid -->
+      <div id="totalPayments" class="text-right text-xl font-semibold text-green-800 hidden">
+        Total Paid: <span class="text-green-900 font-bold">Ksh <span id="totalPaid">0</span></span>
+      </div>
+
+      <!-- No Data Message -->
+      <div id="noPaymentsMsg" class="text-center text-gray-500 mt-6 hidden">
+        No payment records found.
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase Script -->
+  <script type="module">
+    import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6k4OlLYnotuuChAjLBoHmqfv9-iwrlfY",
+      authDomain: "alfajiri-database.firebaseapp.com",
+      databaseURL: "https://alfajiri-database-default-rtdb.firebaseio.com",
+      projectId: "alfajiri-database",
+      storageBucket: "alfajiri-database.appspot.com",
+      messagingSenderId: "310417854615",
+      appId: "1:310417854615:web:6f65002a119caeaf9119d2"
+    };
+
+    const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+    const db = getDatabase(app);
+
+    const phone = document.getElementById("userphone").textContent.trim();
+    const paymentTableBody = document.getElementById("paymentTableBody");
+    const paymentTableContainer = document.getElementById("paymentTableContainer");
+    const totalPaymentsDiv = document.getElementById("totalPayments");
+    const totalPaidEl = document.getElementById("totalPaid");
+    const noPaymentsMsg = document.getElementById("noPaymentsMsg");
+
+    function fetchPayments(phone) {
+      paymentTableBody.innerHTML = "";
+      paymentTableContainer.classList.add("hidden");
+      totalPaymentsDiv.classList.add("hidden");
+      noPaymentsMsg.classList.add("hidden");
+
+      if (!phone) {
+        noPaymentsMsg.textContent = "Phone number not found.";
+        noPaymentsMsg.classList.remove("hidden");
+        return;
+      }
+
+      let totalPaid = 0;
+      const paymentsRef = ref(db, "payments");
+      onValue(paymentsRef, snapshot => {
+        let found = false;
+        paymentTableBody.innerHTML = "";
+
+        snapshot.forEach(child => {
+          const data = child.val();
+          if (data.phone === phone) {
+            found = true;
+            totalPaid += parseFloat(data.amount || 0);
+
+            const row = document.createElement("tr");
+            row.innerHTML = `
+              <td class="px-4 py-3 font-medium">Ksh ${Number(data.amount).toLocaleString()}</td>
+              <td class="px-4 py-3">${data.reference}</td>
+              <td class="px-4 py-3">${data.provider}</td>
+              <td class="px-4 py-3">${new Date(data.timestamp).toLocaleString()}</td>
+            `;
+            paymentTableBody.appendChild(row);
+          }
+        });
+
+        if (found) {
+          paymentTableContainer.classList.remove("hidden");
+          totalPaidEl.textContent = totalPaid.toLocaleString();
+          totalPaymentsDiv.classList.remove("hidden");
+        } else {
+          noPaymentsMsg.classList.remove("hidden");
+        }
+      }, { onlyOnce: true });
+    }
+
+    fetchPayments(phone);
+  </script>
+</section>
+
         <section id="news" class="section hidden"><h2 class="text-2xl font-bold">News</h2></section>
-        <section id="referrals" class="section hidden"><h2 class="text-2xl font-bold">Referrals</h2></section>
+        <section id="referrals" class="section hidden">
+          <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
+            <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg">
+    <h2 class="text-2xl font-bold text-blue-600 text-center mb-4">Referral Program</h2>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+        <p class="font-semibold text-gray-700">Total Invites</p>
+        <p id="totalInvites" class="text-lg font-bold text-blue-700">0</p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+        <p class="font-semibold text-gray-700">Total Income</p>
+        <p id="totalIncome" class="text-lg font-bold text-green-600">Ksh 0.00</p>
+      </div>
+
+      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+        <p class="font-semibold text-gray-700">Level 1 (10%)</p>
+        <p id="level1Count" class="font-bold">0</p>
+        <p id="level1Amount" class="text-green-600">Ksh 0.00</p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+        <p class="font-semibold text-gray-700">Level 2 (5%)</p>
+        <p id="level2Count" class="font-bold">0</p>
+        <p id="level2Amount" class="text-green-600">Ksh 0.00</p>
+      </div>
+      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+        <p class="font-semibold text-gray-700">Level 3 (1%)</p>
+        <p id="level3Count" class="font-bold">0</p>
+        <p id="level3Amount" class="text-green-600">Ksh 0.00</p>
+      </div>
+    </div>
+
+    <div class="mt-6 text-center">
+      <p class="font-semibold text-gray-700 mb-2">Your Referral Link</p>
+      <p id="refLink" class="text-blue-600 font-mono break-all text-sm">https://ndolwavincent.github.io/20xmarket/index.html--</p>
+      <button onclick="copyLink()" class="mt-2 text-xs text-white bg-blue-500 px-4 py-1 rounded hover:bg-blue-600">Copy</button>
+    </div>
+
+    <div class="mt-6 text-center">
+      <p class="font-semibold mb-2">QR Code</p>
+      <div id="qrCode" class="mx-auto"></div>
+    </div>
+  </div>
+
+  <!-- Firebase and QRCode -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    async function loadReferralStats() {
+      const user = JSON.parse(localStorage.getItem("loggedInUser"));
+      const phone = user?.phone;
+      if (!phone) return;
+
+      const dbRef = ref(db);
+      const userSnap = await get(child(dbRef, `users/${phone}`));
+      if (!userSnap.exists()) return;
+
+      const userData = userSnap.val();
+      const myRefCode = userData.refcode;
+      const myLink = `https://ndolwavincent.github.io/20xmarket/index.html/${myRefCode}`;
+      document.getElementById("refLink").textContent = myLink;
+
+      // Generate QR Code
+      QRCode.toCanvas(document.createElement("canvas"), myLink, function (err, canvas) {
+        if (!err) {
+          document.getElementById("qrCode").innerHTML = "";
+          document.getElementById("qrCode").appendChild(canvas);
+        }
+      });
+
+      const referralsSnap = await get(child(dbRef, `referrals/${myRefCode}`));
+      if (!referralsSnap.exists()) return;
+
+      let level1 = 0, level2 = 0, level3 = 0;
+      Object.values(referralsSnap.val()).forEach(ref => {
+        if (ref.level === 1) level1++;
+        else if (ref.level === 2) level2++;
+        else if (ref.level === 3) level3++;
+      });
+
+      const income1 = level1 * 100;
+      const income2 = level2 * 50;
+      const income3 = level3 * 10;
+      const totalIncome = income1 + income2 + income3;
+
+      document.getElementById("level1Count").textContent = level1;
+      document.getElementById("level2Count").textContent = level2;
+      document.getElementById("level3Count").textContent = level3;
+
+      document.getElementById("level1Amount").textContent = `Ksh ${income1.toFixed(2)}`;
+      document.getElementById("level2Amount").textContent = `Ksh ${income2.toFixed(2)}`;
+      document.getElementById("level3Amount").textContent = `Ksh ${income3.toFixed(2)}`;
+      document.getElementById("totalIncome").textContent = `Ksh ${totalIncome.toFixed(2)}`;
+      document.getElementById("totalInvites").textContent = level1 + level2 + level3;
+    }
+
+    loadReferralStats();
+  </script>
+
+  <script>
+    function copyLink() {
+      const text = document.getElementById("refLink").textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Referral link copied!");
+      });
+    }
+  </script>
+          </div>
+        </section>
         <section id="profile" class="section hidden">
           <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xl w-full">
@@ -1037,7 +1376,7 @@
           <button onclick="navigate('home')">🏠</button><span>Home</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
-          <button onclick="navigate('deposit)">➕</button><span>Deposit</span>
+          <button onclick="navigate('deposit')">➕</button><span>Deposit</span>
         </div>
         <div class="flex flex-col items-center text-xs text-gray-700">
           <button onclick="navigate('withdraw')">➖</button><span>Withdraw</span>
