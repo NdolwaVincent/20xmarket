@@ -157,8 +157,9 @@
 
             <!-- Transactions -->
             <div class="mt-6 text-center">
-              <div id="flashBox"
-       class="w-full max-w-xl gold-bg green-text p-6 rounded-xl shadow-xl text-center text-lg font-semibold transition duration-500 ease-in-out">
+              <div id="flashBox">
+                 <div id="flashBox"
+       class="w-full max-w-xl bg-yellow-400 text-green-900 p-6 rounded-xl shadow-xl text-center text-lg font-semibold transition-opacity duration-500 opacity-0">
     Loading recent withdrawals...
   </div>
 
@@ -187,10 +188,10 @@
       const data = snapshot.val();
       if (!data) {
         flashBox.textContent = "No withdrawal data found.";
+        flashBox.classList.remove("opacity-0");
         return;
       }
 
-      // Get latest 5 sorted by timestamp descending
       withdrawals = Object.entries(data)
         .filter(([_, item]) => item.timestamp)
         .sort((a, b) => b[1].timestamp - a[1].timestamp)
@@ -205,24 +206,38 @@
 
       const [_, entry] = withdrawals[currentIndex];
 
-      flashBox.innerHTML = `
-        <div class="space-y-2">
-          <div class="text-xl font-bold">
-            📞 <span>${entry.phone}</span>
+      const phone = entry.phone || "";
+      const maskedPhone = phone.replace(/^(\d{3})\d{4}(\d{2,})$/, "$1****$2");
+
+      // Start fade-out
+      flashBox.classList.add("opacity-0");
+
+      // After fade-out (500ms), update content and fade-in
+      setTimeout(() => {
+        flashBox.innerHTML = `
+          <div class="space-y-2">
+            <div class="text-xl font-bold">
+              📞 <span>${maskedPhone}</span>
+            </div>
+            <div class="text-2xl font-extrabold">
+              withdraw Ksh ${entry.amount}
+            </div>
+            <div class="uppercase tracking-wide text-sm font-medium">
+              Status: ${entry.status || 'Pending'}
+            </div>
           </div>
-          <div class="text-2xl font-extrabold">
-            Requested Ksh ${entry.amount}
-          </div>
-          <div class="uppercase tracking-wider text-sm font-medium">
-            Status: ${entry.status || 'Pending'}
-          </div>
-        </div>
-      `;
+        `;
+
+        // Fade-in
+        flashBox.classList.remove("opacity-0");
+      }, 500); // match transition duration
 
       currentIndex = (currentIndex + 1) % withdrawals.length;
-      setTimeout(showNext, 5000); // 5 seconds delay
+      setTimeout(showNext, 3000); // 3 seconds total per entry
     }
   </script>
+              </div>
+      
             </div>
 
             <!-- Hot Asset -->
