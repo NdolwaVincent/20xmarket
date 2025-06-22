@@ -157,8 +157,72 @@
 
             <!-- Transactions -->
             <div class="mt-6 text-center">
-              <h3 class="font-bold text-lg">Recent Transactions</h3>
-              <p>+1****4332 <span class="text-sm text-gray-500">1 min ago</span> - <span class="text-green-600">+ 4,050 USD</span></p>
+              <div id="flashBox"
+       class="w-full max-w-xl gold-bg green-text p-6 rounded-xl shadow-xl text-center text-lg font-semibold transition duration-500 ease-in-out">
+    Loading recent withdrawals...
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const flashBox = document.getElementById("flashBox");
+    let withdrawals = [];
+    let currentIndex = 0;
+
+    onValue(ref(db, "withdrawals"), (snapshot) => {
+      const data = snapshot.val();
+      if (!data) {
+        flashBox.textContent = "No withdrawal data found.";
+        return;
+      }
+
+      // Get latest 5 sorted by timestamp descending
+      withdrawals = Object.entries(data)
+        .filter(([_, item]) => item.timestamp)
+        .sort((a, b) => b[1].timestamp - a[1].timestamp)
+        .slice(0, 5);
+
+      currentIndex = 0;
+      showNext();
+    });
+
+    function showNext() {
+      if (withdrawals.length === 0) return;
+
+      const [_, entry] = withdrawals[currentIndex];
+
+      flashBox.innerHTML = `
+        <div class="space-y-2">
+          <div class="text-xl font-bold">
+            📞 <span>${entry.phone}</span>
+          </div>
+          <div class="text-2xl font-extrabold">
+            Requested Ksh ${entry.amount}
+          </div>
+          <div class="uppercase tracking-wider text-sm font-medium">
+            Status: ${entry.status || 'Pending'}
+          </div>
+        </div>
+      `;
+
+      currentIndex = (currentIndex + 1) % withdrawals.length;
+      setTimeout(showNext, 5000); // 5 seconds delay
+    }
+  </script>
             </div>
 
             <!-- Hot Asset -->
@@ -398,35 +462,35 @@
 </section>
 
        <section id="purchases" class="section hidden">
-  <div class="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
-    <div class="bg-gradient-to-r from-blue-50 to-white rounded-2xl shadow-lg p-6 md:p-10 space-y-6">
-      <h2 class="text-3xl font-bold text-center text-blue-700">My Purchase Records</h2>
+  <div class="max-w-7xl mx-auto px-2 sm:px-4 py-6">
+    <div class="bg-gradient-to-r from-blue-50 to-white rounded-2xl shadow-lg p-4 sm:p-6 space-y-6">
+      <h2 class="text-xl sm:text-2xl md:text-3xl font-bold text-center text-blue-700">My Purchase Records</h2>
 
       <!-- Hidden phone number -->
       <span id="userphone" class="hidden">0712345678</span>
 
-      <!-- Table Wrapper -->
+      <!-- Responsive Scrollable Table -->
       <div id="tableContainer" class="overflow-x-auto hidden">
-        <table class="min-w-full table-auto border-collapse rounded-lg overflow-hidden">
-          <thead class="bg-blue-100 text-blue-800 text-sm uppercase">
+        <table class="min-w-full table-auto border-collapse rounded-lg text-xs sm:text-sm md:text-base text-gray-700">
+          <thead class="bg-blue-100 text-blue-800 uppercase">
             <tr>
-              <th class="px-4 py-3 text-left">Product</th>
-              <th class="px-4 py-3 text-left">Units</th>
-              <th class="px-4 py-3 text-left">Total Cost (Ksh)</th>
-              <th class="px-4 py-3 text-left">Date</th>
+              <th class="px-3 py-2 min-w-[120px] text-left">Product</th>
+              <th class="px-3 py-2 min-w-[80px] text-left">Units</th>
+              <th class="px-3 py-2 min-w-[140px] text-left">Total Cost (Ksh)</th>
+              <th class="px-3 py-2 min-w-[160px] text-left">Date</th>
             </tr>
           </thead>
-          <tbody id="purchaseTableBody" class="bg-white divide-y divide-blue-100 text-gray-700 text-sm"></tbody>
+          <tbody id="purchaseTableBody" class="bg-white divide-y divide-blue-100"></tbody>
         </table>
       </div>
 
       <!-- Total Investment -->
-      <div id="totalInvestment" class="text-right text-xl font-semibold text-blue-900 hidden">
-        Total Investment: Ksh <span id="totalAmount">0</span>
+      <div id="totalInvestment" class="text-right text-sm sm:text-base md:text-lg font-semibold text-blue-900 hidden">
+        Total Investment: <span class="font-bold">Ksh <span id="totalAmount">0</span></span>
       </div>
 
-      <!-- No Data Message -->
-      <div id="noDataMsg" class="text-center text-gray-500 mt-4 hidden">
+      <!-- No Records Message -->
+      <div id="noDataMsg" class="text-center text-gray-500 text-sm sm:text-base mt-4 hidden">
         No purchases found.
       </div>
     </div>
@@ -483,10 +547,10 @@
 
             const row = document.createElement("tr");
             row.innerHTML = `
-              <td class="px-4 py-3">${data.product}</td>
-              <td class="px-4 py-3">${data.units}</td>
-              <td class="px-4 py-3">Ksh ${data.totalCost}</td>
-              <td class="px-4 py-3">${new Date(data.timestamp).toLocaleString()}</td>
+              <td class="px-3 py-2 min-w-[120px]">${data.product}</td>
+              <td class="px-3 py-2 min-w-[80px]">${data.units}</td>
+              <td class="px-3 py-2 min-w-[140px]">Ksh ${Number(data.totalCost).toLocaleString()}</td>
+              <td class="px-3 py-2 min-w-[160px]">${new Date(data.timestamp).toLocaleString()}</td>
             `;
             tableBody.appendChild(row);
           }
@@ -505,8 +569,7 @@
     fetchPurchasesByPhone(phone);
   </script>
 </section>
-
-        <section id="deposit" class="section hidden"><h2 class="text-2xl font-bold">Deposit</h2>
+<section id="deposit" class="section hidden"><h2 class="text-2xl font-bold">Deposit</h2>
           <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
             <h2 class="text-2xl font-bold text-center text-blue-700">Deposit</h2>
             <div>
@@ -634,154 +697,187 @@
           </div>
         </section>
         <section id="withdraw" class="section hidden">
-          <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
-            <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-6">
-    
-    <!-- Navigation -->
-    <div class="flex justify-between items-center border-b pb-4">
-      <button class="text-blue-600 font-semibold">Withdraw</button>
-      <button class="text-gray-500 hover:text-blue-600">Rules</button>
-      <button class="text-gray-500 hover:text-blue-600">History</button>
-    </div>
+  <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6 space-y-6">
 
-    <!-- Balance Card -->
-    <div class="bg-blue-50 text-blue-800 p-4 rounded-xl flex items-center justify-between shadow-sm">
-      <div>
-        <p class="text-sm">Available Balance</p>
-        <p id="balanceDisplay" class="text-2xl font-bold">Ksh 50</p>
+      <!-- Notice -->
+      <div class="bg-yellow-100 text-yellow-800 p-4 rounded-xl shadow-sm text-sm font-medium">
+        Minimum withdrawal amount is <strong>Ksh 1300</strong>
       </div>
+
+      <!-- Navigation -->
+      <div class="flex justify-between items-center border-b pb-4">
+        <button class="text-blue-600 font-semibold">Withdraw</button>
+        <button class="text-gray-500 hover:text-blue-600">Rules</button>
+        <button class="text-gray-500 hover:text-blue-600">History</button>
+      </div>
+
+      <!-- Phone Number -->
+      <input type="tel" id="withdrawPhoneInput"
+        placeholder="Enter phone number (07...)"
+        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+
+      <!-- Amount -->
+      <input type="number" id="withdrawAmountInput"
+        placeholder="Enter amount"
+        class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+
+      <!-- Submit Button -->
+      <button id="withdrawSubmitBtn"
+        class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
+        Submit Withdrawal
+      </button>
+
+      <!-- Loading Bar -->
+      <div id="withdrawLoadingBar" class="w-full bg-gray-200 rounded-full h-2 hidden">
+        <div class="bg-blue-600 h-2 rounded-full animate-pulse" style="width: 100%"></div>
+      </div>
+
+      <!-- Feedback -->
+      <p id="withdrawFeedbackMsg" class="text-center text-sm mt-2 text-red-600"></p>
+      <p id="withdrawStatusMsg" class="text-center text-sm mt-1 text-gray-700"></p>
     </div>
 
-    <!-- Withdrawal Form -->
-    <p class="text-sm text-gray-600">Minimum withdrawal amount: Ksh 50</p>
-    <input type="number" id="amountInput"
-           placeholder="Enter amount"
-           class="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"/>
+    <!-- Firebase Script -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
+      import { getDatabase, ref, push, set, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
 
-    <button id="withdrawBtn"
-            class="w-full bg-blue-600 text-white py-3 rounded-xl font-semibold hover:bg-blue-700 transition">
-      Withdraw
-    </button>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+        authDomain: "m-sales-45b35.firebaseapp.com",
+        databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+        projectId: "m-sales-45b35",
+        storageBucket: "m-sales-45b35.appspot.com",
+        messagingSenderId: "194892525308",
+        appId: "1:194892525308:web:c01af3028c85abdb97f179"
+      };
 
-    <!-- Loading Bar -->
-    <div id="loadingBar" class="w-full bg-gray-200 rounded-full h-2 hidden">
-      <div class="bg-blue-600 h-2 rounded-full animate-pulse" style="width: 100%"></div>
-    </div>
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
 
-    <!-- Feedback -->
-    <p id="message" class="text-center text-sm mt-2 text-red-600"></p>
+      // Elements
+      const withdrawBtn = document.getElementById("withdrawSubmitBtn");
+      const phoneInput = document.getElementById("withdrawPhoneInput");
+      const amountInput = document.getElementById("withdrawAmountInput");
+      const loadingBar = document.getElementById("withdrawLoadingBar");
+      const message = document.getElementById("withdrawFeedbackMsg");
+      const statusMessage = document.getElementById("withdrawStatusMsg");
+
+      // Simulated User ID (use Firebase Auth in real app)
+      const userId = "user_" + Date.now();
+
+      withdrawBtn.addEventListener("click", async () => {
+        const phone = phoneInput.value.trim();
+        const amount = parseInt(amountInput.value);
+
+        // Reset messages
+        message.textContent = "";
+        statusMessage.textContent = "";
+
+        // Validate phone and amount
+        if (!phone || !/^07\d{8}$/.test(phone)) {
+          message.textContent = "Enter a valid Safaricom phone number starting with 07...";
+          return;
+        }
+
+        if (isNaN(amount) || amount < 1300) {
+          message.textContent = "Withdrawal amount must be at least Ksh 1300.";
+          return;
+        }
+
+        // Show loading
+        loadingBar.classList.remove("hidden");
+        withdrawBtn.disabled = true;
+        withdrawBtn.textContent = "Submitting...";
+
+        try {
+          const withdrawalsRef = ref(db, "withdrawals");
+          const newWithdrawalRef = await push(withdrawalsRef);
+
+          await set(newWithdrawalRef, {
+            userId: userId,
+            phone: phone,
+            amount: amount,
+            status: "pending",
+            timestamp: serverTimestamp()
+          });
+
+          // Reset form
+          phoneInput.value = "";
+          amountInput.value = "";
+
+          message.textContent = "Withdrawal request sent. Awaiting admin approval.";
+          message.classList.remove("text-red-600");
+          message.classList.add("text-yellow-600");
+
+          // Listen for approval
+          onValue(ref(db, `withdrawals/${newWithdrawalRef.key}`), (snapshot) => {
+            const data = snapshot.val();
+            if (!data) return;
+
+            if (data.status === "approved") {
+              statusMessage.textContent = "✅ Approved by admin.";
+              message.classList.remove("text-yellow-600");
+              message.classList.add("text-green-600");
+            } else if (data.status === "rejected") {
+              statusMessage.textContent = "❌ Rejected by admin.";
+              message.classList.remove("text-yellow-600");
+              message.classList.add("text-red-600");
+            } else {
+              statusMessage.textContent = "⏳ Still pending...";
+            }
+          });
+        } catch (error) {
+          console.error("Firebase Error:", error);
+          message.textContent = "An error occurred. Please try again.";
+          message.classList.add("text-red-600");
+        } finally {
+          loadingBar.classList.add("hidden");
+          withdrawBtn.disabled = false;
+          withdrawBtn.textContent = "Submit Withdrawal";
+        }
+      });
+    </script>
   </div>
+</section>
 
-  <!-- Firebase Module Script -->
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js";
-    import { getDatabase, ref, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-      authDomain: "m-sales-45b35.firebaseapp.com",
-      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-      projectId: "m-sales-45b35",
-      storageBucket: "m-sales-45b35.appspot.com",
-      messagingSenderId: "194892525308",
-      appId: "1:194892525308:web:c01af3028c85abdb97f179",
-      measurementId: "G-ML4GT4MMKV"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-
-    // Simulated available balance
-    let availableBalance = 50;
-
-    const withdrawBtn = document.getElementById("withdrawBtn");
-    const amountInput = document.getElementById("amountInput");
-    const loadingBar = document.getElementById("loadingBar");
-    const message = document.getElementById("message");
-
-    withdrawBtn.addEventListener("click", async () => {
-      const amount = parseInt(amountInput.value);
-      message.textContent = "";
-
-      if (isNaN(amount) || amount < 50) {
-        message.textContent = "Minimum withdrawal is Ksh 50";
-        return;
-      }
-
-      if (amount > availableBalance) {
-        message.textContent = "Insufficient balance. Withdrawal denied.";
-        return;
-      }
-
-      // Show loading
-      loadingBar.classList.remove("hidden");
-      withdrawBtn.disabled = true;
-      withdrawBtn.textContent = "Processing...";
-
-      try {
-        const userId = "user123"; // Replace with real user UID if authenticated
-        const withdrawalRef = push(ref(db, "withdrawals"));
-        await set(withdrawalRef, {
-          userId,
-          amount,
-          status: "pending",
-          timestamp: serverTimestamp()
-        });
-
-        availableBalance -= amount;
-        document.getElementById("balanceDisplay").textContent = `Ksh ${availableBalance}`;
-        message.textContent = "Withdrawal request sent for approval.";
-        message.classList.remove("text-red-600");
-        message.classList.add("text-green-600");
-        amountInput.value = "";
-      } catch (error) {
-        console.error("Withdrawal error:", error);
-        message.textContent = "An error occurred. Try again.";
-      } finally {
-        loadingBar.classList.add("hidden");
-        withdrawBtn.disabled = false;
-        withdrawBtn.textContent = "Withdraw";
-      }
-    });
-  </script>
-          </div>
-        </section>
         <section id="posts" class="section hidden">
-  <div class="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
-    <div class="bg-white shadow-2xl rounded-3xl overflow-hidden p-4 sm:p-10 space-y-6 border border-green-200">
-      <h2 class="text-2xl sm:text-3xl font-bold text-center text-green-700 mb-4">My Payment Records</h2>
+  <div class="max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-8">
+    <div class="bg-white shadow-2xl rounded-3xl p-4 sm:p-6 space-y-6 border border-green-200">
+      <h2 class="text-xl sm:text-2xl font-bold text-center text-green-700 mb-2 sm:mb-4">My Payment Records</h2>
 
       <!-- Hidden phone value -->
       <span id="userphone" class="hidden">0712345678</span>
 
-      <!-- Responsive Scrollable Table -->
+      <!-- Responsive Table Container -->
       <div id="paymentTableContainer" class="w-full overflow-x-auto hidden">
-        <table class="min-w-full table-auto text-sm sm:text-base text-gray-700 border border-green-200">
-          <thead class="bg-green-100 text-green-800 uppercase text-xs sm:text-sm">
+        <table class="min-w-full table-auto text-xs sm:text-sm lg:text-base text-gray-700 border border-green-200">
+          <thead class="bg-green-100 text-green-800 uppercase text-[10px] sm:text-xs">
             <tr>
-              <th class="whitespace-nowrap px-3 py-2 text-left">Amount (Ksh)</th>
-              <th class="whitespace-nowrap px-3 py-2 text-left">Reference</th>
-              <th class="whitespace-nowrap px-3 py-2 text-left">Provider</th>
-              <th class="whitespace-nowrap px-3 py-2 text-left">Date</th>
+              <th class="px-3 py-2 min-w-[100px] text-left">Amount (Ksh)</th>
+              <th class="px-3 py-2 min-w-[120px] text-left">Reference</th>
+              <th class="px-3 py-2 min-w-[100px] text-left">Provider</th>
+              <th class="px-3 py-2 min-w-[140px] text-left">Date</th>
             </tr>
           </thead>
           <tbody id="paymentTableBody" class="divide-y divide-gray-200 bg-white"></tbody>
         </table>
       </div>
 
-      <!-- Total Payment Section -->
-      <div id="totalPayments" class="text-right text-lg sm:text-xl font-semibold text-green-800 hidden">
+      <!-- Total Paid Section -->
+      <div id="totalPayments" class="text-right text-sm sm:text-lg font-semibold text-green-800 hidden">
         Total Paid: <span class="text-green-900 font-bold">Ksh <span id="totalPaid">0</span></span>
       </div>
 
-      <!-- No Data Message -->
-      <div id="noPaymentsMsg" class="text-center text-gray-500 mt-4 hidden">
+      <!-- No Records Message -->
+      <div id="noPaymentsMsg" class="text-center text-gray-500 text-sm mt-4 hidden">
         No payment records found.
       </div>
     </div>
   </div>
 
-  <!-- Firebase Script -->
+  <!-- Firebase Logic -->
   <script type="module">
     import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -820,6 +916,7 @@
 
       let totalPaid = 0;
       const paymentsRef = ref(db, "payments");
+
       onValue(paymentsRef, snapshot => {
         let found = false;
         paymentTableBody.innerHTML = "";
@@ -833,9 +930,8 @@
             const row = document.createElement("tr");
             row.innerHTML = `
               <td class="px-3 py-2 whitespace-nowrap font-medium">Ksh ${Number(data.amount).toLocaleString()}</td>
-              <td class="px-3 py-2 whitespace-nowrap">${data.providerReference
-}</td>
-              <td class="px-3 py-2 whitespace-nowrap">${data.provider}</td>
+              <td class="px-3 py-2 whitespace-nowrap">${data.providerReference || '-'}</td>
+              <td class="px-3 py-2 whitespace-nowrap">${data.provider || '-'}</td>
               <td class="px-3 py-2 whitespace-nowrap">${new Date(data.timestamp).toLocaleString()}</td>
             `;
             paymentTableBody.appendChild(row);
@@ -857,131 +953,173 @@
 </section>
 
 
+
         <section id="news" class="section hidden"><h2 class="text-2xl font-bold">News</h2></section>
         <section id="referrals" class="section hidden">
-          <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
-            <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg">
-    <h2 class="text-2xl font-bold text-blue-600 text-center mb-4">Referral Program</h2>
+  <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
+    <div class="bg-white shadow-lg rounded-2xl p-6 w-full max-w-lg">
+      <h2 class="text-2xl font-bold text-blue-600 text-center mb-4">Referral Program</h2>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
-        <p class="font-semibold text-gray-700">Total Invites</p>
-        <p id="totalInvites" class="text-lg font-bold text-blue-700">0</p>
-      </div>
-      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
-        <p class="font-semibold text-gray-700">Total Income</p>
-        <p id="totalIncome" class="text-lg font-bold text-green-600">Ksh 0.00</p>
+      <!-- Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+        <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+          <p class="font-semibold text-gray-700">Total Invites</p>
+          <p id="totalInvites" class="text-lg font-bold text-blue-700">0</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+          <p class="font-semibold text-gray-700">Total Income</p>
+          <p id="totalIncome" class="text-lg font-bold text-green-600">Ksh 0.00</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+          <p class="font-semibold text-gray-700">Level 1 (10%)</p>
+          <p id="level1Count" class="font-bold">0</p>
+          <p id="level1Amount" class="text-green-600">Ksh 0.00</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+          <p class="font-semibold text-gray-700">Level 2 (5%)</p>
+          <p id="level2Count" class="font-bold">0</p>
+          <p id="level2Amount" class="text-green-600">Ksh 0.00</p>
+        </div>
+        <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
+          <p class="font-semibold text-gray-700">Level 3 (1%)</p>
+          <p id="level3Count" class="font-bold">0</p>
+          <p id="level3Amount" class="text-green-600">Ksh 0.00</p>
+        </div>
       </div>
 
-      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
-        <p class="font-semibold text-gray-700">Level 1 (10%)</p>
-        <p id="level1Count" class="font-bold">0</p>
-        <p id="level1Amount" class="text-green-600">Ksh 0.00</p>
+      <!-- Referral Link -->
+      <div class="mt-6 text-center">
+        <p class="font-semibold text-gray-700 mb-2">Your Referral Link</p>
+        <div class="flex flex-wrap justify-center gap-2">
+          <p id="refLink" class="text-blue-600 font-mono break-all text-sm"></p>
+          <button onclick="copyLink()" class="text-xs text-white bg-blue-500 px-3 py-1 rounded hover:bg-blue-600">Copy Link</button>
+          <button onclick="shareOnWhatsApp()" class="text-xs text-white bg-green-500 px-3 py-1 rounded hover:bg-green-600">WhatsApp</button>
+          <button onclick="shareLink()" class="text-xs text-white bg-gray-600 px-3 py-1 rounded hover:bg-gray-700">Share</button>
+        </div>
+
+        <p class="font-semibold text-gray-700 mt-4 mb-2">Your Referral Code</p>
+        <div class="flex flex-wrap justify-center gap-2">
+          <p id="refcode" class="text-blue-600 font-mono break-all text-sm"></p>
+          <button onclick="copyCode()" class="text-xs text-white bg-blue-500 px-3 py-1 rounded hover:bg-blue-600">Copy Code</button>
+          <button onclick="shareCode()" class="text-xs text-white bg-green-500 px-3 py-1 rounded hover:bg-green-600">WhatsApp</button>
+        </div>
       </div>
-      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
-        <p class="font-semibold text-gray-700">Level 2 (5%)</p>
-        <p id="level2Count" class="font-bold">0</p>
-        <p id="level2Amount" class="text-green-600">Ksh 0.00</p>
-      </div>
-      <div class="bg-gray-50 p-4 rounded-xl shadow-sm">
-        <p class="font-semibold text-gray-700">Level 3 (1%)</p>
-        <p id="level3Count" class="font-bold">0</p>
-        <p id="level3Amount" class="text-green-600">Ksh 0.00</p>
+
+      <!-- QR Code -->
+      <div class="mt-6 text-center">
+        <p class="font-semibold mb-2">QR Code</p>
+        <div id="qrCode" class="mx-auto"></div>
       </div>
     </div>
 
-    <div class="mt-6 text-center">
-      <p class="font-semibold text-gray-700 mb-2">Your Referral Link</p>
-      <p id="refLink" class="text-blue-600 font-mono break-all text-sm">http://20xmarket.com/index.html--</p>
-      <button onclick="copyLink()" class="mt-2 text-xs text-white bg-blue-500 px-4 py-1 rounded hover:bg-blue-600">Copy</button>
-    </div>
+    <!-- Firebase & QR -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
 
-    <div class="mt-6 text-center">
-      <p class="font-semibold mb-2">QR Code</p>
-      <div id="qrCode" class="mx-auto"></div>
-    </div>
-  </div>
+      const firebaseConfig = {
+        apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+        authDomain: "m-sales-45b35.firebaseapp.com",
+        databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+        projectId: "m-sales-45b35",
+        storageBucket: "m-sales-45b35.appspot.com",
+        messagingSenderId: "194892525308",
+        appId: "1:194892525308:web:c01af3028c85abdb97f179"
+      };
 
-  <!-- Firebase and QRCode -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.4.4/build/qrcode.min.js"></script>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+      const app = initializeApp(firebaseConfig);
+      const db = getDatabase(app);
 
-    const firebaseConfig = {
-      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-      authDomain: "m-sales-45b35.firebaseapp.com",
-      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-      projectId: "m-sales-45b35",
-      storageBucket: "m-sales-45b35.appspot.com",
-      messagingSenderId: "194892525308",
-      appId: "1:194892525308:web:c01af3028c85abdb97f179"
-    };
+      async function loadReferralStats() {
+        const user = JSON.parse(localStorage.getItem("loggedInUser"));
+        const phone = user?.phone;
+        if (!phone) return;
 
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
+        const dbRef = ref(db);
+        const userSnap = await get(child(dbRef, `users/${phone}`));
+        if (!userSnap.exists()) return;
 
-    async function loadReferralStats() {
-      const user = JSON.parse(localStorage.getItem("loggedInUser"));
-      const phone = user?.phone;
-      if (!phone) return;
+        const userData = userSnap.val();
+        const myRefCode = userData.refcode;
+        const timestamp = Date.now(); // Trackable and expirational
+        const myLink = `https://20xmarket.com/index.html?ref=${myRefCode}&ts=${timestamp}`;
 
-      const dbRef = ref(db);
-      const userSnap = await get(child(dbRef, `users/${phone}`));
-      if (!userSnap.exists()) return;
+        document.getElementById("refLink").textContent = myLink;
+        document.getElementById("refcode").textContent = myRefCode;
 
-      const userData = userSnap.val();
-      const myRefCode = userData.refcode;
-      const myLink = `https://20xmarket.com/index.html/${myRefCode}`;
-      document.getElementById("refLink").textContent = myLink;
+        // QR Code
+        QRCode.toCanvas(document.createElement("canvas"), myLink, function (err, canvas) {
+          if (!err) {
+            document.getElementById("qrCode").innerHTML = "";
+            document.getElementById("qrCode").appendChild(canvas);
+          }
+        });
 
-      // Generate QR Code
-      QRCode.toCanvas(document.createElement("canvas"), myLink, function (err, canvas) {
-        if (!err) {
-          document.getElementById("qrCode").innerHTML = "";
-          document.getElementById("qrCode").appendChild(canvas);
+        const referralsSnap = await get(child(dbRef, `referrals/${myRefCode}`));
+        if (!referralsSnap.exists()) return;
+
+        let level1 = 0, level2 = 0, level3 = 0;
+        Object.values(referralsSnap.val()).forEach(ref => {
+          if (ref.level === 1) level1++;
+          else if (ref.level === 2) level2++;
+          else if (ref.level === 3) level3++;
+        });
+
+        const income1 = level1 * 100;
+        const income2 = level2 * 50;
+        const income3 = level3 * 10;
+        const totalIncome = income1 + income2 + income3;
+
+        document.getElementById("level1Count").textContent = level1;
+        document.getElementById("level2Count").textContent = level2;
+        document.getElementById("level3Count").textContent = level3;
+        document.getElementById("level1Amount").textContent = `Ksh ${income1.toFixed(2)}`;
+        document.getElementById("level2Amount").textContent = `Ksh ${income2.toFixed(2)}`;
+        document.getElementById("level3Amount").textContent = `Ksh ${income3.toFixed(2)}`;
+        document.getElementById("totalIncome").textContent = `Ksh ${totalIncome.toFixed(2)}`;
+        document.getElementById("totalInvites").textContent = level1 + level2 + level3;
+      }
+
+      loadReferralStats();
+    </script>
+
+    <!-- Sharing & Copy -->
+    <script>
+      function copyLink() {
+        const text = document.getElementById("refLink").textContent;
+        navigator.clipboard.writeText(text).then(() => alert("Referral link copied!"));
+      }
+
+      function copyCode() {
+        const text = document.getElementById("refcode").textContent;
+        navigator.clipboard.writeText(text).then(() => alert("Referral code copied!"));
+      }
+
+      function shareOnWhatsApp() {
+        const link = document.getElementById("refLink").textContent;
+        const text = `Join me and earn with 20xMarket! Use my referral link: ${link}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      }
+
+      function shareCode() {
+        const code = document.getElementById("refcode").textContent;
+        const text = `Use my referral code on 20xMarket: ${code} to earn rewards!`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
+      }
+
+      function shareLink() {
+        const link = document.getElementById("refLink").textContent;
+        if (navigator.share) {
+          navigator.share({ title: "20xMarket Referral", text: "Join me via this link!", url: link });
+        } else {
+          alert("Sharing not supported on this browser.");
         }
-      });
+      }
+    </script>
+  </div>
+</section>
 
-      const referralsSnap = await get(child(dbRef, `referrals/${myRefCode}`));
-      if (!referralsSnap.exists()) return;
-
-      let level1 = 0, level2 = 0, level3 = 0;
-      Object.values(referralsSnap.val()).forEach(ref => {
-        if (ref.level === 1) level1++;
-        else if (ref.level === 2) level2++;
-        else if (ref.level === 3) level3++;
-      });
-
-      const income1 = level1 * 100;
-      const income2 = level2 * 50;
-      const income3 = level3 * 10;
-      const totalIncome = income1 + income2 + income3;
-
-      document.getElementById("level1Count").textContent = level1;
-      document.getElementById("level2Count").textContent = level2;
-      document.getElementById("level3Count").textContent = level3;
-
-      document.getElementById("level1Amount").textContent = `Ksh ${income1.toFixed(2)}`;
-      document.getElementById("level2Amount").textContent = `Ksh ${income2.toFixed(2)}`;
-      document.getElementById("level3Amount").textContent = `Ksh ${income3.toFixed(2)}`;
-      document.getElementById("totalIncome").textContent = `Ksh ${totalIncome.toFixed(2)}`;
-      document.getElementById("totalInvites").textContent = level1 + level2 + level3;
-    }
-
-    loadReferralStats();
-  </script>
-
-  <script>
-    function copyLink() {
-      const text = document.getElementById("refLink").textContent;
-      navigator.clipboard.writeText(text).then(() => {
-        alert("Referral link copied!");
-      });
-    }
-  </script>
-          </div>
-        </section>
         <section id="profile" class="section hidden">
           <div class="bg-white rounded-xl shadow-md p-6 w-full max-w-md space-y-6">
             <div class="bg-white p-6 rounded-2xl shadow-xl max-w-xl w-full">
