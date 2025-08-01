@@ -3,237 +3,199 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>20X Market</title>
+  <title>20XMarket - Smart Investment Growth</title>
+  
+  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-  body {
-    font-family: "Times New Roman", Times, serif;
-    font-size: 14px;
-    font-weight: normal;
-    color: #1f2937; /* Tailwind's gray-800 for good readability */
-    background-color: #f3f4f6; /* Tailwind's gray-100 */
-    margin: 0;
-    padding: 0;
-  }
-</style>
 
-  <style>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
 
-    @media (max-width: 768px) {
-      #sidebar.show {
-        transform: translateX(0);
-      }
-    }
-
-  </style>
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen">
-  <div class="bg-white p-8 rounded-2xl shadow-lg w-full max-w-md">
-    <div class="text-center mb-6">
-      <h3 class="text-3xl font-bold text-blue-600">20X MARKET</h3>
-      <p id="formTitle" class="text-gray-600">Sign in to your account</p>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- Navbar -->
+  <nav class="bg-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <h1 class="text-2xl font-bold text-green-600">20XMarket</h1>
+      <ul class="hidden md:flex space-x-6">
+        <li><a href="#home" class="hover:text-green-600">Home</a></li>
+        <li><a href="#offers" class="hover:text-green-600">Offers</a></li>
+        <li><a href="#how" class="hover:text-green-600">How it Works</a></li>
+        <li><a href="#testimonials" class="hover:text-green-600">Testimonials</a></li>
+        <li><a href="#contact" class="hover:text-green-600">Contact</a></li>
+      </ul>
+      <a href="login.html" class="btn btn-success">Login</a>
     </div>
+  </nav>
 
-    <form id="accountForm" class="space-y-4">
-      <div id="nameField" class="hidden">
-        <label class="block text-gray-700 font-medium mb-1">Name</label>
-        <input type="text" id="name" placeholder="Vincent Nj" class="w-full border rounded-xl px-4 py-2"/>
-      </div>
+  <!-- Hero Section -->
+  <section id="home" class="bg-green-700 text-white py-20 text-center">
+    <div class="max-w-5xl mx-auto px-4">
+      <h2 class="text-4xl font-bold mb-4">Invest Smart, Earn Better</h2>
+      <p class="text-lg mb-6">Join 20XMarket today and grow your money through secure and high-yield investment options.</p>
+      <a href="login.html" class="btn btn-light">Get Started</a>
+    </div>
+  </section>
 
-      <div id="emailField" class="hidden">
-        <label class="block text-gray-700 font-medium mb-1">Email</label>
-        <input type="email" id="email" placeholder="example@gmail.com" class="w-full border rounded-xl px-4 py-2"/>
-      </div>
-
+  <!-- Dynamic Stats -->
+  <section class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8 text-center">
       <div>
-        <label class="block text-gray-700 font-medium mb-1">Phone Number</label>
-        <input type="tel" id="phone" required placeholder="07418..." class="w-full border rounded-xl px-4 py-2"/>
+        <h3 class="text-3xl font-bold text-green-600 counter" data-target="3050">0</h3>
+        <p>Happy Investors</p>
       </div>
-
       <div>
-        <label class="block text-gray-700 font-medium mb-1">Password</label>
-        <input type="password" id="password" required placeholder="••••••••" class="w-full border rounded-xl px-4 py-2"/>
+        <h3 class="text-3xl font-bold text-green-600 counter" data-target="1200000">0</h3>
+        <p>Total ROI Distributed (KES)</p>
       </div>
-
-      <div id="confirmPasswordField" class="hidden">
-        <label class="block text-gray-700 font-medium mb-1">Confirm Password</label>
-        <input type="password" id="confirmPassword" placeholder="••••••••" class="w-full border rounded-xl px-4 py-2"/>
+      <div>
+        <h3 class="text-3xl font-bold text-green-600 counter" data-target="12">0</h3>
+        <p>Active Investment Plans</p>
       </div>
+    </div>
+  </section>
 
-      <div id="referralCodeField" class="hidden">
-        <label class="block text-gray-700 font-medium mb-1">Referral Code (optional)</label>
-        <input type="text" id="referredBy" placeholder="Enter code if any" class="w-full border rounded-xl px-4 py-2"/>
+  <!-- Investment Offers -->
+  <section id="offers" class="py-16 bg-gray-100">
+    <div class="max-w-6xl mx-auto px-4">
+      <h2 class="text-3xl font-bold text-center mb-10">Our Investment Plans</h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <div class="bg-white shadow-md p-6 rounded-lg text-center">
+          <h3 class="text-xl font-semibold mb-2">Starter Plan</h3>
+          <p class="mb-2">KES 500 - 5,000</p>
+          <p class="text-green-600 font-bold">5% Return / Week</p>
+          <button class="btn btn-outline-success mt-4" data-bs-toggle="modal" data-bs-target="#loginModal">Invest Now</button>
+        </div>
+        <div class="bg-white shadow-md p-6 rounded-lg text-center">
+          <h3 class="text-xl font-semibold mb-2">Growth Plan</h3>
+          <p class="mb-2">KES 5,001 - 50,000</p>
+          <p class="text-green-600 font-bold">8% Return / Week</p>
+          <button class="btn btn-outline-success mt-4" data-bs-toggle="modal" data-bs-target="#loginModal">Invest Now</button>
+        </div>
+        <div class="bg-white shadow-md p-6 rounded-lg text-center">
+          <h3 class="text-xl font-semibold mb-2">Elite Plan</h3>
+          <p class="mb-2">KES 50,001 - 500,000</p>
+          <p class="text-green-600 font-bold">12% Return / Week</p>
+          <button class="btn btn-outline-success mt-4" data-bs-toggle="modal" data-bs-target="#loginModal">Invest Now</button>
+        </div>
       </div>
+    </div>
+  </section>
 
-      <div class="flex justify-center hidden" id="loader">
-        <svg class="animate-spin h-6 w-6 text-blue-600" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
-        </svg>
+  <!-- Login Required Modal -->
+  <div class="modal fade" id="loginModal" tabindex="-1" aria-labelledby="loginModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title text-dark" id="loginModalLabel">Login Required</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-dark">
+          You need to log in or create an account to proceed with your investment.
+        </div>
+        <div class="modal-footer">
+          <a href="login.html" class="btn btn-success">Login to Proceed</a>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        </div>
       </div>
-
-      <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition">
-        <span id="submitBtnText">Login</span>
-      </button>
-
-      <p class="text-center text-sm mt-4">
-        <span id="toggleText">Don't have an account?</span>
-        <a href="#" id="toggleForm" class="text-blue-600 hover:underline">Sign Up</a>
-      </p>
-    </form>
-
-    <p id="errorMessage" class="text-red-500 text-sm mt-3 text-center hidden"></p>
+    </div>
   </div>
 
-  <script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+  <!-- How It Works -->
+  <section id="how" class="py-16 bg-white">
+    <div class="max-w-6xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-10">How 20XMarket Works</h2>
+      <div class="grid md:grid-cols-4 gap-6 text-left">
+        <div>
+          <h3 class="font-bold text-lg mb-2">1. Sign Up</h3>
+          <p>Create your free account in just a few steps.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg mb-2">2. Choose Plan</h3>
+          <p>Select from our flexible investment plans.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg mb-2">3. Invest</h3>
+          <p>Deposit and start earning instantly.</p>
+        </div>
+        <div>
+          <h3 class="font-bold text-lg mb-2">4. Get Returns</h3>
+          <p>Withdraw weekly earnings or reinvest.</p>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
-    authDomain: "m-sales-45b35.firebaseapp.com",
-    databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
-    projectId: "m-sales-45b35",
-    storageBucket: "m-sales-45b35.appspot.com",
-    messagingSenderId: "194892525308",
-    appId: "1:194892525308:web:c01af3028c85abdb97f179"
-  };
+  <!-- Testimonials -->
+  <section id="testimonials" class="py-16 bg-green-100">
+    <div class="max-w-5xl mx-auto px-4 text-center">
+      <h2 class="text-3xl font-bold mb-10">What Investors Say</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-white p-6 rounded shadow">
+          <p>"20XMarket gave me real passive income with no stress. Highly recommend!"</p>
+          <h4 class="mt-4 font-semibold text-green-600">— Brian O.</h4>
+        </div>
+        <div class="bg-white p-6 rounded shadow">
+          <p>"The growth I’ve seen in 3 months is amazing. Transparent and reliable."</p>
+          <h4 class="mt-4 font-semibold text-green-600">— Anita K.</h4>
+        </div>
+      </div>
+    </div>
+  </section>
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+  <!-- Footer -->
+  <footer id="contact" class="bg-green-800 text-white py-10">
+    <div class="max-w-6xl mx-auto px-4 grid md:grid-cols-3 gap-8">
+      <div>
+        <h4 class="font-bold text-lg mb-2">20XMarket</h4>
+        <p>Empowering smart investors across the world with trusted returns.</p>
+      </div>
+      <div>
+        <h4 class="font-bold text-lg mb-2">Quick Links</h4>
+        <ul>
+          <li><a href="#offers" class="hover:underline">Investment Plans</a></li>
+          <li><a href="#how" class="hover:underline">How It Works</a></li>
+          <li><a href="#testimonials" class="hover:underline">Testimonials</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-bold text-lg mb-2">Contact</h4>
+        <p>Email: 20xmarketglobal@gmail.com.com</p>
+        <p>Phone: +1 (840) 206-4328</p>
+        <div class="mt-4 space-x-4">
+          <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" class="inline w-6"/></a>
+          <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733579.png" class="inline w-6"/></a>
+          <a href="#"><img src="https://cdn-icons-png.flaticon.com/512/733/733558.png" class="inline w-6"/></a>
+        </div>
+      </div>
+    </div>
+    <div class="text-center mt-8 text-sm">© 2025 20XMarket. All rights reserved.</div>
+  </footer>
 
-  const toggleForm = document.getElementById("toggleForm");
-  const toggleText = document.getElementById("toggleText");
-  const formTitle = document.getElementById("formTitle");
-  const nameField = document.getElementById("nameField");
-  const emailField = document.getElementById("emailField");
-  const confirmPasswordField = document.getElementById("confirmPasswordField");
-  const referralCodeField = document.getElementById("referralCodeField");
-  const submitBtnText = document.getElementById("submitBtnText");
-  const loader = document.getElementById("loader");
-  const accountForm = document.getElementById("accountForm");
-  const errorMessage = document.getElementById("errorMessage");
+  <!-- Dynamic Counter Script -->
+  <script>
+    const counters = document.querySelectorAll('.counter');
+    const speed = 200;
 
-  const referredByInput = document.getElementById("referredBy");
+    counters.forEach(counter => {
+      const update = () => {
+        const target = +counter.getAttribute('data-target');
+        const current = +counter.innerText;
 
-  let isLogin = true;
+        const increment = Math.ceil(target / speed);
 
-  toggleForm.addEventListener("click", (e) => {
-    e.preventDefault();
-    isLogin = !isLogin;
-    nameField.classList.toggle("hidden", isLogin);
-    emailField.classList.toggle("hidden", isLogin);
-    confirmPasswordField.classList.toggle("hidden", isLogin);
-    referralCodeField.classList.toggle("hidden", isLogin);
-    formTitle.textContent = isLogin ? "Sign in to your account" : "Create a new account";
-    submitBtnText.textContent = isLogin ? "Login" : "Sign Up";
-    toggleText.textContent = isLogin ? "Don't have an account?" : "Already have an account?";
-    toggleForm.textContent = isLogin ? "Sign Up" : "Login";
-    errorMessage.classList.add("hidden");
-  });
-
-  accountForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const phone = document.getElementById("phone").value.trim();
-    const password = document.getElementById("password").value.trim();
-    const name = document.getElementById("name")?.value.trim();
-    const confirmPassword = document.getElementById("confirmPassword")?.value.trim();
-    const email = document.getElementById("email")?.value.trim();
-    const referredBy = referredByInput?.value.trim();
-
-    const dbRef = ref(db);
-    errorMessage.classList.add("hidden");
-    loader.classList.remove("hidden");
-
-    if (!phone || !password || (!isLogin && (!name || !email || !confirmPassword))) {
-      showError("Please fill in all required fields.");
-      loader.classList.add("hidden");
-      return;
-    }
-
-    if (!isLogin && password !== confirmPassword) {
-      showError("Passwords do not match.");
-      loader.classList.add("hidden");
-      return;
-    }
-
-    if (isLogin) {
-      // LOGIN LOGIC
-      try {
-        const snapshot = await get(child(dbRef, `users/${phone}`));
-        if (snapshot.exists()) {
-          const user = snapshot.val();
-          if (user.password === password) {
-            localStorage.setItem("loggedInUser", JSON.stringify({ name: user.name, phone }));
-            window.location.href = "dashb.html";
-          } else {
-            showError("Incorrect password.");
-          }
+        if (current < target) {
+          counter.innerText = current + increment;
+          setTimeout(update, 30);
         } else {
-          showError("User not found. Please sign up.");
+          counter.innerText = target.toLocaleString();
         }
-      } catch {
-        showError("Login failed. Try again.");
-      }
-    } else {
-      // REGISTER LOGIC
-      try {
-        const snapshot = await get(child(dbRef, `users/${phone}`));
-        if (snapshot.exists()) {
-          showError("Phone already registered.");
-        } else {
-          const refcode = `20X${phone.slice(-4)}`;
-          const userData = { name, email, password, refcode };
-
-          if (referredBy) {
-            userData.referredBy = referredBy;
-
-            // Save referral log
-            await set(ref(db, `referrals/${referredBy}/${phone}`), {
-              phone,
-              joinedAt: Date.now(),
-              level: 1
-            });
-          }
-
-          await set(ref(db, `users/${phone}`), userData);
-          alert("Registration successful. Please login.");
-          toggleForm.click();
-        }
-      } catch {
-        showError("Registration failed. Try again.");
-      }
-    }
-
-    loader.classList.add("hidden");
-  });
-
-  function showError(msg) {
-    errorMessage.textContent = msg;
-    errorMessage.classList.remove("hidden");
-  }
-
-  // ✅ Check if referral link is valid (less than 24h old)
-  function checkReferralFromURL() {
-    const url = new URL(window.location.href);
-    const ref = url.searchParams.get("ref");
-    const ts = parseInt(url.searchParams.get("ts"));
-    const now = Date.now();
-
-    if (ref && !isNaN(ts)) {
-      const MAX_DURATION = 24 * 60 * 60 * 1000;
-      if ((now - ts) <= MAX_DURATION) {
-        referredByInput.value = ref;
-        referralCodeField.classList.remove("hidden");
-      } else {
-        alert("Referral link has expired.");
-      }
-    }
-  }
-
-  checkReferralFromURL();
-</script>
-
+      };
+      update();
+    });
+  </script>
 </body>
 </html>
-
