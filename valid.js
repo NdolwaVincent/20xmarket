@@ -1,3 +1,4 @@
+// ---------------------------------------------------------
 // auth.js — Background Access Verification (Invisible Mode)
 // ---------------------------------------------------------
 
@@ -15,102 +16,44 @@ const firebaseConfig = {
   appId: "1:194892525308:web:c01af3028c85abdb97f179"
 };
 
-// Initialize Firebase
+// ✅ Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// 🔐 Fixed Access Code
-const FIXED_ACCESS_CODE = "778899";
+// ✅ Fixed Access Code (system-wide)
+const ACCESS_CODE = "778899";
 
-// Retrieve stored user info
-const phone = localStorage.getItem("phone");
-const accessCode = localStorage.getItem("accessCode");
-
-let expiryDate = null;
-
-// 🧠 Verify access silently
+// ✅ Check Access Validity Function
 async function verifyAccess() {
-  // 🟥 No stored credentials → redirect immediately
-  if (!phone || accessCode !== FIXED_ACCESS_CODE) {
-    silentRedirect();
-    return;
-  }
-
   try {
-    const userRef = ref(db, "DailyPayments/" + phone);
-    const snapshot = await get(userRef);
+    const accessRef = ref(db, "DailyPayments/" + ACCESS_CODE);
+    const snapshot = await get(accessRef);
 
-    // 🟥 No record found
     if (!snapshot.exists()) {
-      silentRedirect();
+      console.warn("⚠️ Access code not found. Redirecting...");
+      window.location.href = "index.html";
       return;
     }
 
-    const userData = snapshot.val();
-
-    // Ensure expiry field exists and is valid
-    if (!userData.expiry) {
-      silentRedirect();
-      return;
-    }
-
-    expiryDate = new Date(userData.expiry);
+    const data = snapshot.val();
+    const expiry = new Date(data.expiry);
     const now = new Date();
 
-    // 🟥 Expired
-    if (now >= expiryDate) {
-      silentRedirect();
+    if (now > expiry) {
+      console.log("⏰ Access expired.");
+      window.location.href = "index.html";
       return;
     }
 
-    // ✅ Still valid
-    console.log("✅ Access valid for:", phone, "| Expires:", expiryDate.toLocaleString());
-
-    // Start background expiry checks
-    startAutoCheck();
-
+    // ✅ Access valid
+    console.log(`✅ Access valid until: ${expiry.toDateString()}`);
   } catch (error) {
-    console.error("❌ Access check failed:", error);
-    // Retry once after short delay
-    setTimeout(verifyAccess, 3000);
-  }
-}
-
-// 🔁 Recheck expiry every 1 minute
-function startAutoCheck() {
-  setInterval(async () => {
-    try {
-      const userRef = ref(db, "DailyPayments/" + phone);
-      const snapshot = await get(userRef);
-      if (!snapshot.exists()) {
-        silentRedirect();
-        return;
-      }
-
-      const userData = snapshot.val();
-      expiryDate = new Date(userData.expiry);
-      const now = new Date();
-
-      if (now >= expiryDate) {
-        console.warn("⏰ Payment expired — redirecting...");
-        silentRedirect();
-      }
-    } catch (err) {
-      console.error("Auto check failed:", err);
-    }
-  }, 60000);
-}
-
-// 🚪 Redirect silently to index.html
-function silentRedirect() {
-  localStorage.removeItem("accessCode");
-  localStorage.removeItem("phone");
-  if (!window.location.href.endsWith("index.html")) {
+    console.error("❌ Error verifying access:", error);
+    // Fallback redirect in case of failure
     window.location.href = "index.html";
   }
 }
 
-// 🚀 Run verification automatically
-document.addEventListener("DOMContentLoaded", () => {
-  setTimeout(verifyAccess, 500);
-});
+// ⏱️ Run Check Immediately and Repeat Every 5 Minutes
+verifyAccess();
+setInterval(verifyAccess, 5 * 60 * 1000);
