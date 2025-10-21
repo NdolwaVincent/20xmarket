@@ -1,5 +1,5 @@
-// auth.js — Background Access Verification Script
-// -----------------------------------------------
+// auth.js — Background Access Verification Script (Silent Mode)
+// --------------------------------------------------------------
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -19,61 +19,68 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// Fixed Access Code
+// Fixed access code
 const FIXED_ACCESS_CODE = "778899";
 
-// Retrieve data from localStorage
+// Retrieve stored login data
 const phone = localStorage.getItem("phone");
 const accessCode = localStorage.getItem("accessCode");
 
 let expiryDate = null;
 
-// 🧠 Verify user access silently
+// 🧠 Silent Access Verification
 async function verifyAccess() {
-  if (!phone || accessCode !== FIXED_ACCESS_CODE) {
-    redirectWithMessage("Access denied. Please make a valid payment first.");
-    return;
+  try {
+    // If missing phone or wrong access code, redirect silently
+    if (!phone || accessCode !== FIXED_ACCESS_CODE) {
+      silentRedirect();
+      return;
+    }
+
+    const userRef = ref(db, "DailyPayments/" + phone);
+    const snapshot = await get(userRef);
+
+    // If no payment record found, redirect silently
+    if (!snapshot.exists()) {
+      silentRedirect();
+      return;
+    }
+
+    const userData = snapshot.val();
+    expiryDate = new Date(userData.expiry);
+    const now = new Date();
+
+    // If expired, redirect silently
+    if (expiryDate < now) {
+      silentRedirect();
+      return;
+    }
+
+    // ✅ Access is valid — continue and check periodically
+    startAutoCheck();
+
+  } catch (error) {
+    // On any error (e.g. Firebase fetch failure), redirect silently
+    silentRedirect();
   }
-
-  const userRef = ref(db, "DailyPayments/" + phone);
-  const snapshot = await get(userRef);
-
-  if (!snapshot.exists()) {
-    redirectWithMessage("No valid payment found. Please pay again.");
-    return;
-  }
-
-  const userData = snapshot.val();
-  expiryDate = new Date(userData.expiry);
-  const now = new Date();
-
-  if (expiryDate < now) {
-    redirectWithMessage("Your payment period has expired. Please renew.");
-    return;
-  }
-
-  // ✅ Access is valid — start background checks
-  console.log(`✅ Access granted for ${userData.phone}, valid until ${expiryDate.toDateString()}`);
-  startAutoCheck();
 }
 
-// 🔁 Auto-check expiry every 1 minute
+// 🔁 Background expiry checker (every minute)
 function startAutoCheck() {
   setInterval(() => {
     const now = new Date();
     if (expiryDate && now >= expiryDate) {
-      redirectWithMessage("⚠️ Your access has expired. Please renew payment to continue.");
+      silentRedirect();
     }
   }, 60000);
 }
 
-// 🚪 Logout and redirect
-function redirectWithMessage(message) {
-  alert(message);
+// 🚪 Silent redirect and cleanup
+function silentRedirect() {
   localStorage.removeItem("accessCode");
   localStorage.removeItem("phone");
   window.location.href = "index.html";
 }
 
-// 🚀 Run verification immediately when loaded
+// 🚀 Run verification as soon as script loads
 verifyAccess();
