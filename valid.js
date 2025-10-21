@@ -1,5 +1,5 @@
-// auth.js — Background Access Verification (Stable + Silent)
-// -----------------------------------------------------------
+// auth.js — Background Access Verification (Invisible Mode)
+// ---------------------------------------------------------
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
@@ -21,15 +21,15 @@ const db = getDatabase(app);
 
 const FIXED_ACCESS_CODE = "778899";
 
-// Retrieve stored credentials
+// Retrieve login data
 const phone = localStorage.getItem("phone");
 const accessCode = localStorage.getItem("accessCode");
 
 let expiryDate = null;
 
-// 🧠 Verify access and handle page control
+// 🧠 Verify user access silently
 async function verifyAccess() {
-  // Missing info = not logged in
+  // Missing data — redirect immediately
   if (!phone || accessCode !== FIXED_ACCESS_CODE) {
     silentRedirect();
     return;
@@ -39,6 +39,7 @@ async function verifyAccess() {
     const userRef = ref(db, "DailyPayments/" + phone);
     const snapshot = await get(userRef);
 
+    // No payment found
     if (!snapshot.exists()) {
       silentRedirect();
       return;
@@ -48,30 +49,26 @@ async function verifyAccess() {
     expiryDate = new Date(userData.expiry);
     const now = new Date();
 
-    // Expired?
+    // Payment expired
     if (expiryDate < now) {
       silentRedirect();
       return;
     }
 
-    // ✅ Access is valid
-    console.log("Access verified for:", phone);
-    console.log("Valid until:", expiryDate.toISOString());
+    // ✅ Valid access — stay on page silently
+    console.log("Access valid for:", phone, "| Expires:", expiryDate.toISOString());
 
-    // Store latest expiry date in localStorage
-    localStorage.setItem("expiryDate", expiryDate.toISOString());
-
-    // Continue staying in the current page (dashb.html)
+    // Start periodic background check
     startAutoCheck();
 
   } catch (error) {
-    console.error("Verification error:", error);
-    // Fallback: retry after short delay (for slow Firebase responses)
+    console.error("Access check failed:", error);
+    // Retry once after delay in case of Firebase lag
     setTimeout(verifyAccess, 3000);
   }
 }
 
-// 🔁 Check expiry periodically (every minute)
+// 🔁 Auto-check expiry every minute silently
 function startAutoCheck() {
   setInterval(() => {
     const now = new Date();
@@ -81,15 +78,14 @@ function startAutoCheck() {
   }, 60000);
 }
 
-// 🚪 Redirect silently to index.html and clear data
+// 🚪 Silent redirect to index.html
 function silentRedirect() {
   localStorage.removeItem("accessCode");
   localStorage.removeItem("phone");
-  localStorage.removeItem("expiryDate");
   if (!window.location.href.includes("index.html")) {
     window.location.href = "index.html";
   }
 }
 
-// 🚀 Run verification after short delay (ensures Firebase loads)
-setTimeout(verifyAccess, 1000);
+// 🚀 Run verification when script loads
+setTimeout(verifyAccess, 500);
