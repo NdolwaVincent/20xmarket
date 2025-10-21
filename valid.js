@@ -19,17 +19,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
+// 🔐 Fixed Access Code
 const FIXED_ACCESS_CODE = "778899";
 
-// Retrieve login data
+// Retrieve stored user info
 const phone = localStorage.getItem("phone");
 const accessCode = localStorage.getItem("accessCode");
 
 let expiryDate = null;
 
-// 🧠 Verify user access silently
+// 🧠 Verify access silently
 async function verifyAccess() {
-  // Missing data — redirect immediately
+  // 🟥 No stored credentials → redirect immediately
   if (!phone || accessCode !== FIXED_ACCESS_CODE) {
     silentRedirect();
     return;
@@ -39,53 +40,77 @@ async function verifyAccess() {
     const userRef = ref(db, "DailyPayments/" + phone);
     const snapshot = await get(userRef);
 
-    // No payment found
+    // 🟥 No record found
     if (!snapshot.exists()) {
       silentRedirect();
       return;
     }
 
     const userData = snapshot.val();
-    expiryDate = new Date(userData.expiry);
-    const now = new Date();
 
-    // Payment expired
-    if (expiryDate < now) {
+    // Ensure expiry field exists and is valid
+    if (!userData.expiry) {
       silentRedirect();
       return;
     }
 
-    // ✅ Valid access — stay on page silently
-    console.log("Access valid for:", phone, "| Expires:", expiryDate.toISOString());
+    expiryDate = new Date(userData.expiry);
+    const now = new Date();
 
-    // Start periodic background check
+    // 🟥 Expired
+    if (now >= expiryDate) {
+      silentRedirect();
+      return;
+    }
+
+    // ✅ Still valid
+    console.log("✅ Access valid for:", phone, "| Expires:", expiryDate.toLocaleString());
+
+    // Start background expiry checks
     startAutoCheck();
 
   } catch (error) {
-    console.error("Access check failed:", error);
-    // Retry once after delay in case of Firebase lag
+    console.error("❌ Access check failed:", error);
+    // Retry once after short delay
     setTimeout(verifyAccess, 3000);
   }
 }
 
-// 🔁 Auto-check expiry every minute silently
+// 🔁 Recheck expiry every 1 minute
 function startAutoCheck() {
-  setInterval(() => {
-    const now = new Date();
-    if (expiryDate && now >= expiryDate) {
-      silentRedirect();
+  setInterval(async () => {
+    try {
+      const userRef = ref(db, "DailyPayments/" + phone);
+      const snapshot = await get(userRef);
+      if (!snapshot.exists()) {
+        silentRedirect();
+        return;
+      }
+
+      const userData = snapshot.val();
+      expiryDate = new Date(userData.expiry);
+      const now = new Date();
+
+      if (now >= expiryDate) {
+        console.warn("⏰ Payment expired — redirecting...");
+        silentRedirect();
+      }
+    } catch (err) {
+      console.error("Auto check failed:", err);
     }
   }, 60000);
 }
 
-// 🚪 Silent redirect to index.html
+// 🚪 Redirect silently to index.html
 function silentRedirect() {
   localStorage.removeItem("accessCode");
   localStorage.removeItem("phone");
-  if (!window.location.href.includes("index.html")) {
+  if (!window.location.href.endsWith("index.html")) {
     window.location.href = "index.html";
   }
 }
 
-// 🚀 Run verification when script loads
-setTimeout(verifyAccess, 500);
+// 🚀 Run verification automatically
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(verifyAccess, 500);
+});
