@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Member Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+  <!-- Loading Section -->
+  <div id="loading" class="text-center">
+    <h2 class="text-lg font-semibold text-gray-700">🔐 Verifying your access...</h2>
+    <p class="text-sm text-gray-500">Please wait a moment.</p>
+  </div>
+
+  <!-- Dashboard Section -->
+  <div id="dashboard" class="hidden max-w-2xl mx-auto bg-white shadow-lg rounded-lg p-6 text-center">
+    <h1 class="text-2xl font-bold text-green-700 mb-3">Welcome to Your Dashboard</h1>
+    <p class="text-gray-700 mb-2" id="phoneDisplay"></p>
+    <p class="text-sm text-gray-600 mb-4" id="expiryDisplay"></p>
+
+    <div class="border-t border-gray-200 my-4"></div>
+    <p class="text-gray-700">✅ Your access is currently active.</p>
+
+    <button onclick="logout()" class="mt-6 bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
+      Logout
+    </button>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
+
+    // 🔥 Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyBtB199eH6fONCftI_B6IDP80_0Tv2dFN8",
+      authDomain: "m-sales-45b35.firebaseapp.com",
+      databaseURL: "https://m-sales-45b35-default-rtdb.firebaseio.com",
+      projectId: "m-sales-45b35",
+      storageBucket: "m-sales-45b35.appspot.com",
+      messagingSenderId: "194892525308",
+      appId: "1:194892525308:web:c01af3028c85abdb97f179"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const FIXED_ACCESS_CODE = "778899";
+
+    const phone = localStorage.getItem("phone");
+    const accessCode = localStorage.getItem("accessCode");
+
+    const loading = document.getElementById("loading");
+    const dashboard = document.getElementById("dashboard");
+    const phoneDisplay = document.getElementById("phoneDisplay");
+    const expiryDisplay = document.getElementById("expiryDisplay");
+
+    let expiryDate = null;
+
+    // 🧠 Verify user access
+    async function verifyAccess() {
+      try {
+        // Check if user is logged in
+        if (!phone || accessCode !== FIXED_ACCESS_CODE) {
+          silentRedirect();
+          return;
+        }
+
+        const userRef = ref(db, "DailyPayments/" + phone);
+        const snapshot = await get(userRef);
+
+        if (!snapshot.exists()) {
+          silentRedirect();
+          return;
+        }
+
+        const userData = snapshot.val();
+        expiryDate = new Date(userData.expiry);
+        const now = new Date();
+
+        // If expired
+        if (expiryDate < now) {
+          silentRedirect();
+          return;
+        }
+
+        // ✅ Valid Access — show dashboard
+        loading.classList.add("hidden");
+        dashboard.classList.remove("hidden");
+        phoneDisplay.textContent = "Phone: " + userData.phone;
+        expiryDisplay.textContent = "Access valid until: " + expiryDate.toDateString();
+
+        // Start real-time checking
+        startAutoCheck();
+
+      } catch (error) {
+        console.error("Verification error:", error);
+        // Retry after short delay in case Firebase is slow
+        setTimeout(verifyAccess, 2000);
+      }
+    }
+
+    // 🔁 Auto-check every minute
+    function startAutoCheck() {
+      setInterval(() => {
+        const now = new Date();
+        if (expiryDate && now >= expiryDate) {
+          silentRedirect();
+        }
+      }, 60000); // check every 60 seconds
+    }
+
+    // 🚪 Logout & redirect
+    window.logout = function() {
+      localStorage.removeItem("accessCode");
+      localStorage.removeItem("phone");
+      window.location.href = "index.html";
+    };
+
+    // 🔇 Silent redirect for invalid access
+    function silentRedirect() {
+      localStorage.removeItem("accessCode");
+      localStorage.removeItem("phone");
+      if (!window.location.href.includes("index.html")) {
+        window.location.href = "index.html";
+      }
+    }
+
+    // 🕒 Run verification on load
+    verifyAccess();
+  </script>
+</body>
+</html>
